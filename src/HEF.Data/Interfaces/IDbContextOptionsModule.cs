@@ -1,11 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace HEF.Data
 {
     public interface IDbContextOptionsModule
     {
-        Type ServiceType { get; }
-
-        object Instance { get; }
+        bool ApplyServices(IServiceCollection services);
     }
 }
