@@ -6,8 +6,9 @@ namespace HEF.Data.MySql.Storage
 {
     public class MySqlConnectionFactory : DbConnectionFactory
     {
-        public MySqlConnectionFactory(IDbContextOptions contextOptions)
-            : base(contextOptions)
+        public MySqlConnectionFactory(IDbContextOptions contextOptions,
+            INamedConnectionStringResolver connectionStringResolver)
+            : base(contextOptions, connectionStringResolver)
         { }
 
         public override DbConnection CreateDbConnection() => new MySqlConnection(ConnectionString);
