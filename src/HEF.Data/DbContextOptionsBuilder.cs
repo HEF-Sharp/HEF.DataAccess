@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 
 namespace HEF.Data
 {
@@ -24,6 +25,20 @@ namespace HEF.Data
                 throw new ArgumentNullException(nameof(module));
 
             _options = _options.WithModule(module);
+        }
+
+        public virtual DbContextOptionsBuilder UseApplicationServiceProvider(IServiceProvider serviceProvider)
+            => WithOption(e => e.WithApplicationServiceProvider(serviceProvider));
+
+        public virtual DbContextOptionsBuilder UseLoggerFactory(ILoggerFactory loggerFactory)
+            => WithOption(e => e.WithLoggerFactory(loggerFactory));
+
+        private DbContextOptionsBuilder WithOption(Func<CoreOptionsModule, CoreOptionsModule> withFunc)
+        {
+            ((IDbContextOptionsBuilder)this).AddOrUpdateModule(
+                withFunc(Options.FindModule<CoreOptionsModule>() ?? new CoreOptionsModule()));
+
+            return this;
         }
     }
 }
