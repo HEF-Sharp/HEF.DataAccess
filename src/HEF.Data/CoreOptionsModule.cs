@@ -6,6 +6,7 @@ namespace HEF.Data
 {
     public class CoreOptionsModule : IDbContextOptionsModule
     {
+        private IServiceProvider _internalServiceProvider;
         private IServiceProvider _applicationServiceProvider;
         private ILoggerFactory _loggerFactory;
 
@@ -17,15 +18,27 @@ namespace HEF.Data
             if (copyFrom == null)
                 throw new ArgumentNullException(nameof(copyFrom));
 
+            _internalServiceProvider = copyFrom.InternalServiceProvider;
             _applicationServiceProvider = copyFrom.ApplicationServiceProvider;
             _loggerFactory = copyFrom.LoggerFactory;
         }
 
         protected virtual CoreOptionsModule Clone() => new CoreOptionsModule(this);
 
+        public virtual IServiceProvider InternalServiceProvider => _internalServiceProvider;
+
         public virtual IServiceProvider ApplicationServiceProvider => _applicationServiceProvider;
 
         public virtual ILoggerFactory LoggerFactory => _loggerFactory;
+
+        public virtual CoreOptionsModule WithInternalServiceProvider(IServiceProvider internalServiceProvider)
+        {
+            var clone = Clone();
+
+            clone._internalServiceProvider = internalServiceProvider;
+
+            return clone;
+        }
 
         public virtual CoreOptionsModule WithApplicationServiceProvider(IServiceProvider applicationServiceProvider)
         {
