@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using HEF.Data.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Data;
 
@@ -40,10 +41,14 @@ namespace HEF.Data
             {
                 CheckDisposed();
 
-                if (_serviceScope != null)
-                    return _serviceScope.ServiceProvider;
+                if (_serviceScope == null)
+                {
+                    _serviceScope = ServiceProviderCache.Instance.GetOrAdd(_options)
+                        .GetRequiredService<IServiceScopeFactory>()
+                        .CreateScope();
+                }
 
-                throw new NotImplementedException();
+                return _serviceScope.ServiceProvider;
             }
         }
 

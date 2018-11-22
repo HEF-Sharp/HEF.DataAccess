@@ -70,5 +70,7 @@ namespace HEF.Data.Storage
         }
 
         public abstract bool ApplyServices(IServiceCollection services);
+
+        public virtual long GetServiceProviderHashCode() => 0;
     }
 }

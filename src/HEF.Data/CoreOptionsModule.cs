@@ -10,6 +10,8 @@ namespace HEF.Data
         private IServiceProvider _applicationServiceProvider;
         private ILoggerFactory _loggerFactory;
 
+        private long? _serviceProviderHash;
+
         public CoreOptionsModule()
         { }
 
@@ -71,5 +73,17 @@ namespace HEF.Data
 
         private ILoggerFactory GetLoggerFactory()
             => LoggerFactory ?? ApplicationServiceProvider?.GetService<ILoggerFactory>();
+
+        public virtual long GetServiceProviderHashCode()
+        {
+            if (_serviceProviderHash == null)
+            {
+                var hashCode = GetLoggerFactory()?.GetHashCode() ?? 0L;                
+
+                _serviceProviderHash = hashCode;
+            }
+
+            return _serviceProviderHash.Value;
+        }
     }
 }
