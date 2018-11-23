@@ -1,4 +1,5 @@
 ﻿using HEF.Data.Internal;
+using HEF.Data.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Data;
@@ -31,7 +32,9 @@ namespace HEF.Data
 
         private IDbConnection CreateDbConnection()
         {
-            throw new NotImplementedException();
+            var connectionFactory = InternalServiceProvider.GetRequiredService<IDbConnectionFactory>();
+
+            return connectionFactory.CreateDbConnection();
         }
         #endregion;
 

@@ -10,6 +10,9 @@ namespace HEF.Data.Internal
         private readonly ConcurrentDictionary<long, IServiceProvider> _serviceProviderDict
             = new ConcurrentDictionary<long, IServiceProvider>();
 
+        private ServiceProviderCache()
+        { }
+
         public static ServiceProviderCache Instance { get; } = new ServiceProviderCache();
 
         public virtual IServiceProvider GetOrAdd(IDbContextOptions options)
