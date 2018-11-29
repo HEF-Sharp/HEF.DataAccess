@@ -4,13 +4,13 @@ using System.Data.Common;
 
 namespace HEF.Data.MySql.Storage
 {
-    public class MySqlConnectionFactory : DbConnectionFactory
+    public class MySqlConnectionProvider : DbConnectionProvider
     {
-        public MySqlConnectionFactory(IDbContextOptions contextOptions,
+        public MySqlConnectionProvider(IDbContextOptions contextOptions,
             INamedConnectionStringResolver connectionStringResolver)
             : base(contextOptions, connectionStringResolver)
         { }
 
-        public override DbConnection CreateDbConnection() => new MySqlConnection(ConnectionString);
+        protected override DbConnection CreateDbConnection() => new MySqlConnection(ConnectionString);
     }
 }

@@ -9,32 +9,31 @@ namespace HEF.Data
     public class DbContext : IDbContext
     {
         private readonly DbContextOptions _options;
+        private readonly Lazy<IDbConnection> _connection;
 
         private IServiceScope _serviceScope;
-        private IDbConnection _connection;
+        private IDbConnectionProvider _connectionProvider;        
 
         private bool _disposed;
 
         public DbContext(DbContextOptions options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
+
+            _connection = new Lazy<IDbConnection>(() => ConnectionProvider.Connection);
         }
 
         #region Connection
-        public IDbConnection Connection => GetDbConnection();
+        public IDbConnection Connection => _connection.Value;
 
-        private IDbConnection GetDbConnection()
+        protected virtual IDbConnectionProvider ConnectionProvider
         {
-            _connection = _connection ?? CreateDbConnection();
+            get
+            {
+                CheckDisposed();
 
-            return _connection;
-        }
-
-        private IDbConnection CreateDbConnection()
-        {
-            var connectionFactory = InternalServiceProvider.GetRequiredService<IDbConnectionFactory>();
-
-            return connectionFactory.CreateDbConnection();
+                return _connectionProvider ?? (_connectionProvider = InternalServiceProvider.GetRequiredService<IDbConnectionProvider>());
+            }
         }
         #endregion;
 
@@ -71,7 +70,7 @@ namespace HEF.Data
                 _disposed = true;
 
                 _serviceScope?.Dispose();
-                _connection?.Close();
+                _connectionProvider?.Dispose();
             }
         }
         #endregion
