@@ -16,11 +16,27 @@ namespace HEF.Data
 
         private bool _disposed;
 
+        protected DbContext()
+            : this(new DbContextOptions())
+        { }
+
         public DbContext(DbContextOptions options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
 
             _connection = new Lazy<IDbConnection>(() => ConnectionProvider.Connection);
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Override this method to configure the database (and other options) to be used for this context.
+        ///         This method is called for each instance of the context that is created.
+        ///         The base implementation does nothing.
+        ///     </para>
+        /// </summary>
+        /// <param name="optionsBuilder"></param>
+        protected internal virtual void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
         }
 
         #region Connection
@@ -45,7 +61,10 @@ namespace HEF.Data
 
                 if (_serviceScope == null)
                 {
-                    _serviceScope = ServiceProviderCache.Instance.GetOrAdd(_options)
+                    var optionsBuilder = new DbContextOptionsBuilder(_options);
+                    OnConfiguring(optionsBuilder);
+
+                    _serviceScope = ServiceProviderCache.Instance.GetOrAdd(optionsBuilder.Options)
                         .GetRequiredService<IServiceScopeFactory>()
                         .CreateScope();
                 }

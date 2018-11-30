@@ -27,6 +27,9 @@ namespace HEF.Data
             _options = _options.WithModule(module);
         }
 
+        public virtual DbContextOptionsBuilder UseInternalServiceProvider(IServiceProvider serviceProvider)
+            => WithOption(e => e.WithInternalServiceProvider(serviceProvider));
+
         public virtual DbContextOptionsBuilder UseApplicationServiceProvider(IServiceProvider serviceProvider)
             => WithOption(e => e.WithApplicationServiceProvider(serviceProvider));
 
