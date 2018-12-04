@@ -51,7 +51,12 @@ namespace HEF.Data.Storage
             return clone;
         }
 
-        public abstract bool ApplyServices(IServiceCollection services);
+        public virtual bool ApplyServices(IServiceCollection services)
+        {
+            services.AddScoped<INamedConnectionStringResolver, NamedConnectionStringResolver>();
+
+            return false;
+        }
 
         public virtual long GetServiceProviderHashCode() => 0;
     }

@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.50.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\HEF.Data.MySql\HEF.Data.MySql.csproj" />
     <ProjectReference Include="..\..\src\HEF.Data\HEF.Data.csproj" />
   </ItemGroup>

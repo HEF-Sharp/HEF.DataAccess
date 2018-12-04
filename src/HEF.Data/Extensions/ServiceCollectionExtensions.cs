@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static DbContextOptions DbContextOptionsFactory(
             IServiceProvider applicationServiceProvider,
-            Action<IServiceProvider, DbContextOptionsBuilder> optionsAction)            
+            Action<IServiceProvider, DbContextOptionsBuilder> optionsAction)
         {
             var builder = new DbContextOptionsBuilder(
                 new DbContextOptions(new Dictionary<Type, IDbContextOptionsModule>()));

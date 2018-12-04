@@ -21,6 +21,8 @@ namespace HEF.Data.MySql.Storage
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
+            base.ApplyServices(services);
+
             services.AddScoped<IDbConnectionProvider, MySqlConnectionProvider>();
 
             return true;

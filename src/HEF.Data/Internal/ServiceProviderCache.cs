@@ -40,6 +40,8 @@ namespace HEF.Data.Internal
         {
             var providerAdded = false;
 
+            services.AddScoped(p => options);
+
             foreach (var module in options.Modules)
             {
                 if (module.ApplyServices(services))

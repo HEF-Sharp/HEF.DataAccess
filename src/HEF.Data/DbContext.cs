@@ -12,7 +12,7 @@ namespace HEF.Data
         private readonly Lazy<IDbConnection> _connection;
 
         private IServiceScope _serviceScope;
-        private IDbConnectionProvider _connectionProvider;        
+        private IDbConnectionProvider _connectionProvider;
 
         private bool _disposed;
 

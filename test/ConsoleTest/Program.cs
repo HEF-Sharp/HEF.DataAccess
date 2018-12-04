@@ -1,4 +1,5 @@
 ﻿using System;
+using Dapper;
 
 namespace ConsoleTest
 {
@@ -6,7 +7,12 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            using (var db = new ETicketContext())
+            {
+                var ticketCount = db.Connection.ExecuteScalar<int>("select count(*) from ticket_info where isdel = @Flag", new { Flag = "N" });
+                Console.WriteLine($"ticket count {ticketCount}");
+            }
+            Console.ReadLine();
         }
     }
 }
