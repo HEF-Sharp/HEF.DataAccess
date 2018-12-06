@@ -19,7 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{B2E25360-0
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleTest", "test\ConsoleTest\ConsoleTest.csproj", "{913E5ACB-96C5-4104-BCEA-3DC2005F9977}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAppTest", "test\WebAppTest\WebAppTest.csproj", "{A592CE8F-BE89-4557-9F08-3C2CA66025FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAppTest", "test\WebAppTest\WebAppTest.csproj", "{A592CE8F-BE89-4557-9F08-3C2CA66025FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HEF.Data.Query", "src\HEF.Data.Query\HEF.Data.Query.csproj", "{A8CF5644-B9CC-470B-A540-49A321D1A96C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{A592CE8F-BE89-4557-9F08-3C2CA66025FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A592CE8F-BE89-4557-9F08-3C2CA66025FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A592CE8F-BE89-4557-9F08-3C2CA66025FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8CF5644-B9CC-470B-A540-49A321D1A96C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8CF5644-B9CC-470B-A540-49A321D1A96C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8CF5644-B9CC-470B-A540-49A321D1A96C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8CF5644-B9CC-470B-A540-49A321D1A96C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +68,7 @@ Global
 		{48B0A396-105E-4419-B5A5-FDF8A6575867} = {C3881D12-BADA-4261-A823-6DF825DD468A}
 		{913E5ACB-96C5-4104-BCEA-3DC2005F9977} = {B2E25360-0B31-4AF2-903A-CA601BFE2412}
 		{A592CE8F-BE89-4557-9F08-3C2CA66025FB} = {B2E25360-0B31-4AF2-903A-CA601BFE2412}
+		{A8CF5644-B9CC-470B-A540-49A321D1A96C} = {B7604DB4-D15F-44AD-AD05-03CDF4BECC1A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {82FC58E7-FFFB-4968-A0BC-AB73B8C72ED2}

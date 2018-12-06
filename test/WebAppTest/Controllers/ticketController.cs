@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 
 namespace WebAppTest.Controllers
 {
@@ -16,9 +17,9 @@ namespace WebAppTest.Controllers
         }
 
         [HttpGet("count")]
-        public string GetTicketCount()
+        public async Task<string> GetTicketCount()
         {
-            var ticketCount = _dbContxt.Connection.ExecuteScalar<int>("select count(*) from ticket_info where isdel = @Flag", new { Flag = "N" });
+            var ticketCount = await _dbContxt.Connection.ExecuteScalarAsync<int>("select count(*) from ticket_info where isdel = @Flag", new { Flag = "N" });
 
             return $"ticket count {ticketCount}";
         }
