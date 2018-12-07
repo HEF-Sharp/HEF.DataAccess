@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Dapper;
 
 namespace ConsoleTest
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             using (var db = new ETicketContext())
             {
-                var ticketCount = db.Connection.ExecuteScalar<int>("select count(*) from ticket_info where isdel = @Flag", new { Flag = "N" });
+                var ticketCount = await db.Connection.ExecuteScalarAsync<int>("select count(*) from ticket_info where isdel = @Flag", new { Flag = "N" });
                 Console.WriteLine($"ticket count {ticketCount}");
             }
             Console.ReadLine();
