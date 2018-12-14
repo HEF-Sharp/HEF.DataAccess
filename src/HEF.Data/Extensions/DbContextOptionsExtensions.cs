@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 
-namespace HEF.Data.Extensions
+namespace HEF.Data
 {
     public static class DbContextOptionsExtensions
     {

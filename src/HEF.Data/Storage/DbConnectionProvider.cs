@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data.Common;
-using HEF.Data.Extensions;
 
 namespace HEF.Data.Storage
 {
