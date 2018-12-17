@@ -7,6 +7,13 @@ namespace HEF.Data.Query
     {
         private readonly IDictionary<string, object> _parameterValues = new Dictionary<string, object>();
 
+        public QueryContext(DbContext dbContext)
+        {
+            DbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        }
+
+        protected virtual DbContext DbContext { get; }
+
         public virtual IReadOnlyDictionary<string, object> ParameterValues
             => (IReadOnlyDictionary<string, object>)_parameterValues;
 

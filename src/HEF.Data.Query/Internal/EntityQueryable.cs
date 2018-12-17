@@ -10,7 +10,7 @@ namespace HEF.Data.Query.Internal
     {
         private readonly IQueryProvider _queryProvider;
 
-        public EntityQueryable(IQueryProvider queryProvider)            
+        public EntityQueryable(IQueryProvider queryProvider)
         {
             _queryProvider = queryProvider ?? throw new ArgumentNullException(nameof(queryProvider));
             Expression = Expression.Constant(this);
