@@ -12,7 +12,7 @@ namespace HEF.Data.Query
             DbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        protected virtual DbContext DbContext { get; }
+        public virtual DbContext DbContext { get; }
 
         public virtual IReadOnlyDictionary<string, object> ParameterValues
             => (IReadOnlyDictionary<string, object>)_parameterValues;
