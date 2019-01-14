@@ -42,7 +42,7 @@ namespace HEF.Data.Query.Internal
         public virtual Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
         {
             if (query == null)
-                throw new ArgumentNullException(nameof(query));           
+                throw new ArgumentNullException(nameof(query));
 
             query = ExtractParameters(query, _queryContextFactory.Create(), parameterize: false);
 
@@ -51,7 +51,7 @@ namespace HEF.Data.Query.Internal
 
         protected virtual Expression ExtractParameters(
             Expression query,
-            IParameterValues parameterValues,            
+            IParameterValues parameterValues,
             bool parameterize = true,
             bool generateContextAccessors = false)
         {

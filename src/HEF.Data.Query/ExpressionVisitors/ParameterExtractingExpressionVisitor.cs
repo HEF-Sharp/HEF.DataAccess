@@ -6,7 +6,7 @@ namespace HEF.Data.Query.ExpressionVisitors
 {
     public class ParameterExtractingExpressionVisitor : ExpressionVisitor
     {
-        private readonly IParameterValues _parameterValues;        
+        private readonly IParameterValues _parameterValues;
         private readonly bool _parameterize;
         private readonly bool _generateContextAccessors;
         private readonly EvaluatableExpressionFindingExpressionVisitor _evaluatableExpressionFindingExpressionVisitor;
@@ -15,13 +15,13 @@ namespace HEF.Data.Query.ExpressionVisitors
         public ParameterExtractingExpressionVisitor(
             IEvaluatableExpressionFilter evaluatableExpressionFilter,
             IParameterValues parameterValues,
-            Type contextType,            
+            Type contextType,
             bool parameterize,
             bool generateContextAccessors)
         {
             _evaluatableExpressionFindingExpressionVisitor
                 = new EvaluatableExpressionFindingExpressionVisitor(evaluatableExpressionFilter);
-            _parameterValues = parameterValues;           
+            _parameterValues = parameterValues;
             _parameterize = parameterize;
             _generateContextAccessors = generateContextAccessors;
             if (_generateContextAccessors)
