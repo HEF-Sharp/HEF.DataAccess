@@ -7,6 +7,8 @@ namespace HEF.Data
 {
     internal static class TypeExtensions
     {
+        public static Type UnwrapNullableType(this Type type) => Nullable.GetUnderlyingType(type) ?? type;
+
         public static Type GetSequenceType(this Type type)
         {
             var sequenceType = TryGetSequenceType(type);
