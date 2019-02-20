@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HEF.Data.Query.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -12,7 +13,10 @@ namespace HEF.Data.Query.ExpressionVisitors
         private readonly bool _parameterize;
         private readonly bool _generateContextAccessors;
         private readonly EvaluatableExpressionFindingExpressionVisitor _evaluatableExpressionFindingExpressionVisitor;
-        private readonly ContextParameterReplacingExpressionVisitor _contextParameterReplacingExpressionVisitor;        
+        private readonly ContextParameterReplacingExpressionVisitor _contextParameterReplacingExpressionVisitor;
+
+        private readonly Dictionary<Expression, Expression> _evaluatedValues
+            = new Dictionary<Expression, Expression>(ExpressionEqualityComparer.Instance);
 
         private IDictionary<Expression, bool> _evaluatableExpressions;
 
@@ -37,7 +41,18 @@ namespace HEF.Data.Query.ExpressionVisitors
 
         public virtual Expression ExtractParameters(Expression expression)
         {
-            throw new NotImplementedException();
+            var oldEvaluatableExpressions = _evaluatableExpressions;
+            _evaluatableExpressions = _evaluatableExpressionFindingExpressionVisitor.Find(expression);
+
+            try
+            {
+                return Visit(expression);
+            }
+            finally
+            {
+                _evaluatableExpressions = oldEvaluatableExpressions;
+                _evaluatedValues.Clear();
+            }
         }
 
         private class ContextParameterReplacingExpressionVisitor : ExpressionVisitor
