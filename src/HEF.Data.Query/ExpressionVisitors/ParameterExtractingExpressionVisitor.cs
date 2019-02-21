@@ -9,6 +9,8 @@ namespace HEF.Data.Query.ExpressionVisitors
 {
     public class ParameterExtractingExpressionVisitor : ExpressionVisitor
     {
+        private const string QueryFilterPrefix = "ef_filter";
+
         private readonly IParameterValues _parameterValues;
         private readonly bool _parameterize;
         private readonly bool _generateContextAccessors;
@@ -55,6 +57,159 @@ namespace HEF.Data.Query.ExpressionVisitors
             }
         }
 
+        public override Expression Visit(Expression expression)
+        {
+            if (expression == null)
+            {
+                return null;
+            }
+
+            if (_evaluatableExpressions.TryGetValue(expression, out var generateParameter)
+                && !PreserveConvertNode(expression))
+            {
+                return Evaluate(expression, _parameterize && generateParameter);
+            }
+
+            return base.Visit(expression);
+        }
+
+        private static bool PreserveConvertNode(Expression expression)
+        {
+            if (expression is UnaryExpression unaryExpression
+                && (unaryExpression.NodeType == ExpressionType.Convert
+                    || unaryExpression.NodeType == ExpressionType.ConvertChecked))
+            {
+                if (unaryExpression.Type == typeof(object)
+                    || unaryExpression.Type == typeof(Enum))
+                {
+                    return true;
+                }
+
+                if (unaryExpression.Operand.Type.UnwrapNullableType().IsEnum)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected override Expression VisitBinary(BinaryExpression binaryExpression)
+        {
+            if (!binaryExpression.IsLogicalOperation())
+            {
+                return base.VisitBinary(binaryExpression);
+            }
+
+            var newLeftExpression = TryGetConstantValue(binaryExpression.Left) ?? Visit(binaryExpression.Left);
+            if (ShortCircuitBinaryExpression(newLeftExpression, binaryExpression.NodeType))
+            {
+                return newLeftExpression;
+            }
+
+            var newRightExpression = TryGetConstantValue(binaryExpression.Right) ?? Visit(binaryExpression.Right);
+            if (ShortCircuitBinaryExpression(newRightExpression, binaryExpression.NodeType))
+            {
+                return newRightExpression;
+            }
+
+            return binaryExpression.Update(newLeftExpression, binaryExpression.Conversion, newRightExpression);
+        }
+
+        private Expression TryGetConstantValue(Expression expression)
+        {
+            if (_evaluatableExpressions.ContainsKey(expression))
+            {
+                var value = GetValue(expression, out var _);
+
+                if (value is bool)
+                {
+                    return Expression.Constant(value, typeof(bool));
+                }
+            }
+
+            return null;
+        }
+
+        private static bool ShortCircuitBinaryExpression(Expression expression, ExpressionType nodeType)
+            => expression is ConstantExpression constantExpression
+                && constantExpression.Value is bool constantValue
+                && ((constantValue && nodeType == ExpressionType.OrElse)
+                    || (!constantValue && nodeType == ExpressionType.AndAlso));        
+
+        private static Expression GenerateConstantExpression(object value, Type returnType)
+        {
+            var constantExpression = Expression.Constant(value, value?.GetType() ?? returnType);
+
+            return constantExpression.Type != returnType
+                ? Expression.Convert(constantExpression, returnType)
+                : (Expression)constantExpression;
+        }
+
+        private Expression Evaluate(Expression expression, bool generateParameter)
+        {
+            if (_evaluatedValues.TryGetValue(expression, out var cachedValue))
+            {
+                return cachedValue;
+            }
+
+            var parameterValue = GetValue(expression, out var parameterName);
+
+            if (parameterValue is IQueryable innerQueryable)
+            {
+                return ExtractParameters(innerQueryable.Expression);
+            }
+
+            if (parameterName?.StartsWith(QueryFilterPrefix, StringComparison.Ordinal) != true)
+            {
+                if (parameterValue is Expression innerExpression)
+                {
+                    return ExtractParameters(innerExpression);
+                }
+
+                if (!generateParameter)
+                {
+                    var constantValue = GenerateConstantExpression(parameterValue, expression.Type);
+
+                    _evaluatedValues.Add(expression, constantValue);
+
+                    return constantValue;
+                }
+            }
+
+            if (parameterName == null)
+            {
+                parameterName = "p";
+            }
+
+            if (string.Equals(QueryFilterPrefix, parameterName, StringComparison.Ordinal))
+            {
+                parameterName = QueryFilterPrefix + "__p";
+            }
+
+            var compilerPrefixIndex
+                = parameterName.LastIndexOf(">", StringComparison.Ordinal);
+
+            if (compilerPrefixIndex != -1)
+            {
+                parameterName = parameterName.Substring(compilerPrefixIndex + 1);
+            }
+
+            parameterName
+                = CompiledQueryCache.CompiledQueryParameterPrefix
+                    + parameterName
+                    + "_"
+                    + _parameterValues.ParameterValues.Count;
+
+            _parameterValues.AddParameter(parameterName, parameterValue);
+
+            var parameter = Expression.Parameter(expression.Type, parameterName);
+
+            _evaluatedValues.Add(expression, parameter);
+
+            return parameter;
+        }
+
         private class ContextParameterReplacingExpressionVisitor : ExpressionVisitor
         {
             private readonly Type _contextType;
@@ -72,6 +227,89 @@ namespace HEF.Data.Query.ExpressionVisitors
                 return expression?.Type.GetTypeInfo().IsAssignableFrom(_contextType) == true
                     ? ContextParameterExpression
                     : base.Visit(expression);
+            }
+        }
+
+        private object GetValue(Expression expression, out string parameterName)
+        {
+            parameterName = null;
+
+            if (expression == null)
+            {
+                return null;
+            }
+
+            if (_generateContextAccessors)
+            {
+                var newExpression = _contextParameterReplacingExpressionVisitor.Visit(expression);
+
+                if (newExpression != expression)
+                {
+                    if (newExpression.Type is IQueryable)
+                    {
+                        return newExpression;
+                    }
+
+                    parameterName = QueryFilterPrefix
+                                    + (expression.RemoveConvert() is MemberExpression memberExpression
+                                        ? ("__" + memberExpression.Member.Name)
+                                        : "");
+
+                    return Expression.Lambda(
+                        newExpression,
+                        _contextParameterReplacingExpressionVisitor.ContextParameterExpression);
+                }
+            }
+
+            switch (expression)
+            {
+                case MemberExpression memberExpression:
+                    var instanceValue = GetValue(memberExpression.Expression, out parameterName);
+                    try
+                    {
+                        switch (memberExpression.Member)
+                        {
+                            case FieldInfo fieldInfo:
+                                parameterName = (parameterName != null ? parameterName + "_" : "") + fieldInfo.Name;
+                                return fieldInfo.GetValue(instanceValue);
+
+                            case PropertyInfo propertyInfo:
+                                parameterName = (parameterName != null ? parameterName + "_" : "") + propertyInfo.Name;
+                                return propertyInfo.GetValue(instanceValue);
+                        }
+                    }
+                    catch
+                    {
+                        // Try again when we compile the delegate
+                    }
+                    break;
+
+                case ConstantExpression constantExpression:
+                    return constantExpression.Value;
+
+                case MethodCallExpression methodCallExpression:
+                    parameterName = methodCallExpression.Method.Name;
+                    break;
+
+                case UnaryExpression unaryExpression
+                when (unaryExpression.NodeType == ExpressionType.Convert
+                      || unaryExpression.NodeType == ExpressionType.ConvertChecked)
+                    && (unaryExpression.Type.UnwrapNullableType() == unaryExpression.Operand.Type):
+                    return GetValue(unaryExpression.Operand, out parameterName);
+            }
+
+            try
+            {
+                return Expression.Lambda<Func<object>>(
+                        Expression.Convert(expression, typeof(object)))
+                    .Compile()
+                    .Invoke();
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidOperationException(
+                    "An exception was thrown while attempting to evaluate a LINQ query parameter expression",
+                    exception);
             }
         }
 
