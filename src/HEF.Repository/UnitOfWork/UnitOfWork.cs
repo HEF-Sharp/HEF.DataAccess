@@ -6,14 +6,12 @@ namespace HEF.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly IDbContext _dbContext;
-
         public UnitOfWork(IDbContext dbContext)
         {
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            DbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        protected IDbContext DbContext => _dbContext;
+        protected IDbContext DbContext { get; }
 
         public void SaveChanges()
         {
@@ -27,7 +25,7 @@ namespace HEF.Repository
 
         public void Dispose()
         {
-            _dbContext.Dispose();
+            DbContext.Dispose();
         }
     }
 }
