@@ -9,11 +9,17 @@ namespace HEF.Data.Query.Internal
         private readonly Type _contextType;
 
         private readonly IQueryContextFactory _queryContextFactory;
+        private readonly ICompiledQueryCache _compiledQueryCache;
+        private readonly ICompiledQueryCacheKeyGenerator _compiledQueryCacheKeyGenerator;
+        private readonly IQueryModelGenerator _queryModelGenerator;
 
         private readonly IEvaluatableExpressionFilter _evaluatableExpressionFilter;
 
         public QueryCompiler(DbContext dbContext,
             IQueryContextFactory queryContextFactory,
+            ICompiledQueryCache compiledQueryCache,
+            ICompiledQueryCacheKeyGenerator compiledQueryCacheKeyGenerator,
+            IQueryModelGenerator queryModelGenerator,
             IEvaluatableExpressionFilter evaluatableExpressionFilter)
         {
             if (dbContext == null)
@@ -22,6 +28,10 @@ namespace HEF.Data.Query.Internal
             _contextType = dbContext.GetType();
 
             _queryContextFactory = queryContextFactory ?? throw new ArgumentNullException(nameof(queryContextFactory));
+            _compiledQueryCache = compiledQueryCache ?? throw new ArgumentNullException(nameof(compiledQueryCache));
+            _compiledQueryCacheKeyGenerator = compiledQueryCacheKeyGenerator
+                ?? throw new ArgumentNullException(nameof(compiledQueryCacheKeyGenerator));
+            _queryModelGenerator = queryModelGenerator ?? throw new ArgumentNullException(nameof(queryModelGenerator));
 
             _evaluatableExpressionFilter = evaluatableExpressionFilter
                 ?? throw new ArgumentNullException(nameof(evaluatableExpressionFilter));
