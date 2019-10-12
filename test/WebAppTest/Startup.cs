@@ -1,5 +1,4 @@
-﻿using HEF.Data;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,8 +21,8 @@ namespace WebAppTest
         {
             services.AddControllers();
 
-            var connectionString = Configuration.GetConnectionString("defaultConnection");
-            services.AddDbContext<ETicketContext>(options => options.UseMySql(connectionString));
+            //var connectionString = Configuration.GetConnectionString("defaultConnection");
+            //services.AddDbContext<ETicketContext>(options => options.UseMySql(connectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

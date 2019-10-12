@@ -9,19 +9,19 @@ namespace WebAppTest.Controllers
     [ApiController]
     public class ticketController : ControllerBase
     {
-        private readonly ETicketContext _dbContxt;
+        //private readonly ETicketContext _dbContxt;
 
-        public ticketController(ETicketContext dbContext)
-        {
-            _dbContxt = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-        }
+        //public ticketController(ETicketContext dbContext)
+        //{
+        //    _dbContxt = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        //}
 
-        [HttpGet("count")]
-        public async Task<string> GetTicketCount()
-        {
-            var ticketCount = await _dbContxt.Connection.ExecuteScalarAsync<int>("select count(*) from ticket_info where isdel = @Flag", new { Flag = "N" });
+        //[HttpGet("count")]
+        //public async Task<string> GetTicketCount()
+        //{
+        //    var ticketCount = await _dbContxt.Connection.ExecuteScalarAsync<int>("select count(*) from ticket_info where isdel = @Flag", new { Flag = "N" });
 
-            return $"ticket count {ticketCount}";
-        }
+        //    return $"ticket count {ticketCount}";
+        //}
     }
 }

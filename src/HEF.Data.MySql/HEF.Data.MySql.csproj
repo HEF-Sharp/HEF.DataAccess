@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -8,7 +8,7 @@
     <Authors>wanlitao</Authors>
     <Description>HEF Data Component for MySql</Description>
     <Company>GreatBillows</Company>
-    <Copyright>Copyright © GreatBillows 2018</Copyright>
+    <Copyright>Copyright © GreatBillows 2019</Copyright>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/HEF-Sharp/HEF.DataAccess</PackageProjectUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
