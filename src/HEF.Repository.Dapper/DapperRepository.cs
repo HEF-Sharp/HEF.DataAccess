@@ -1,11 +1,20 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using HEF.Data;
+using Dapper;
 
 namespace HEF.Repository.Dapper
 {
     public class DapperRepository<TEntity> : IDapperRepository<TEntity> where TEntity : class
     {
+        public DapperRepository(IDbConnectionContext connectionContext)
+        {
+            ConnectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
+        }
+
+        public IDbConnectionContext ConnectionContext { get; }
+
         #region Sync
 
         #region 查询
@@ -16,7 +25,7 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public TEntity GetByKey(object id)
         {
-            throw new NotImplementedException();
+            return ConnectionContext.Connection.QuerySingle<TEntity>("", id, ConnectionContext.Transaction);
         }
         #endregion
 
