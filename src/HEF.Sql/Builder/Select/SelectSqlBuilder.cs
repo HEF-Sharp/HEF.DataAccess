@@ -22,13 +22,6 @@ namespace HEF.Sql
 
         public SelectSqlBuilder Where(string sql)
         {
-            SqlData.WhereSql += sql;
-
-            return this;
-        }
-
-        public SelectSqlBuilder AndWhere(string sql)
-        {
             if (SqlData.WhereSql.Length > 0)
                 SqlData.WhereSql += " and ";
             SqlData.WhereSql += sql;
