@@ -105,7 +105,6 @@ namespace HEF.Sql
 
             selectProperties = selectProperties.Where(p => propertyPredicate(p.Name));
 
-
             return selectProperties;
         }
     }
