@@ -2,6 +2,6 @@
 {
     public interface ISqlBuilder
     {
-        string Build();
+        SqlSentence Build();
     }
 }

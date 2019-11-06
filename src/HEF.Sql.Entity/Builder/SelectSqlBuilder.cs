@@ -34,7 +34,7 @@ namespace HEF.Sql
 
             var selectProperties = GetSelectProperties(false, propertyExpressions);
 
-            Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p))));
+            Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p, true))));
 
             return this;
         }
@@ -43,7 +43,7 @@ namespace HEF.Sql
         {
             var selectProperties = GetSelectProperties(true, ignorePropertyExpressions);
 
-            Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p))));
+            Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p, true))));
 
             return this;
         }

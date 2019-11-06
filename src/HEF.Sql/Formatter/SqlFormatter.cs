@@ -11,6 +11,11 @@
         {
             return $"{name} as {alias}";
         }
+
+        public virtual string Parameter(string name)
+        {
+            return $"@{name}";
+        }
     }
 
     public class MySqlFormatter : SqlFormatter
@@ -46,6 +51,19 @@
         public override string Alias(string name, string alias)
         {
             return $"{name} {alias}";
+        }
+
+        public override string Parameter(string name)
+        {
+            return $":{name}";
+        }
+    }
+
+    public class PostgreSqlFormatter : SqlFormatter
+    {
+        public override string Parameter(string name)
+        {
+            return $":{name}";
         }
     }
 }

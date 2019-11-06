@@ -1,103 +1,119 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
+using System.Linq;
 
 namespace HEF.Sql
 {
     public class SelectSqlBuilder : ISqlBuilder
     {
-        internal SelectBuilderData SqlData { get; } = new SelectBuilderData();
+        internal SelectBuilderData SelectSqlData { get; } = new SelectBuilderData();
 
         public SelectSqlBuilder Select(string sql)
         {
-            SqlData.Select += sql;
+            SelectSqlData.Select += sql;
 
             return this;
         }
 
         public SelectSqlBuilder From(string sql)
         {
-            SqlData.From += sql;
+            SelectSqlData.From += sql;
 
             return this;
         }
 
         public SelectSqlBuilder Where(string sql)
         {
-            if (SqlData.WhereSql.Length > 0)
-                SqlData.WhereSql += " and ";
-            SqlData.WhereSql += sql;
+            if (SelectSqlData.WhereSql.Length > 0)
+                SelectSqlData.WhereSql += " and ";
+            SelectSqlData.WhereSql += sql;
 
             return this;
         }
 
         public SelectSqlBuilder GroupBy(string sql)
         {
-            SqlData.GroupBy += sql;
+            SelectSqlData.GroupBy += sql;
 
             return this;
         }
 
         public SelectSqlBuilder OrderBy(string sql)
         {
-            SqlData.OrderBy += sql;
+            SelectSqlData.OrderBy += sql;
 
             return this;
         }
 
         public SelectSqlBuilder Having(string sql)
         {
-            SqlData.Having += sql;
+            SelectSqlData.Having += sql;
 
             return this;
         }
 
         public SelectSqlBuilder Paging(int currentPage, int itemsPerPage)
         {
-            SqlData.PagingCurrentPage = currentPage;
-            SqlData.PagingItemsPerPage = itemsPerPage;
+            SelectSqlData.PagingCurrentPage = currentPage;
+            SelectSqlData.PagingItemsPerPage = itemsPerPage;
 
             return this;
         }
 
-        public string Build()
+        public SelectSqlBuilder Parameter(string name, object value)
         {
-            if (SqlData.IsPaging)
-                return PagingBuild();
+            SelectSqlData.Parameters.Add(new SqlParameter(name, value));
 
-            return NoPagingBuild();
+            return this;
         }
 
-        protected string NoPagingBuild()
+        public SqlSentence Build()
         {
-            var sql = new StringBuilder();
+            var sqlStr = BuildSql();
 
-            sql.Append($"select {SqlData.Select} from {SqlData.From}");
-
-            if (SqlData.WhereSql.Length > 0)
-                sql.Append($" where {SqlData.WhereSql}");
-
-            if (SqlData.GroupBy.Length > 0)
-                sql.Append($" group by {SqlData.GroupBy}");
-
-            if (SqlData.Having.Length > 0)
-                sql.Append($" having {SqlData.Having}");
-
-            if (SqlData.OrderBy.Length > 0)
-                sql.Append($"  order by {SqlData.OrderBy}");
-
-            return sql.ToString();
+            return new SqlSentence(sqlStr, SelectSqlData.Parameters.ToArray());
         }
 
-        protected virtual string PagingBuild()
+        protected string BuildSql()
         {
-            var sql = NoPagingBuild();
-            
-            sql += $" limit {SqlData.GetFromItemNumber() - 1}, {SqlData.PagingItemsPerPage}";
+            if (SelectSqlData.IsPaging)
+                return BuildPagingSql();
 
-            return sql;
+            return BuildNoPagingSql();
+        }
+
+        protected string BuildNoPagingSql()
+        {
+            var builder = new StringBuilder();
+
+            builder.Append($"select {SelectSqlData.Select} from {SelectSqlData.From}");
+
+            if (SelectSqlData.WhereSql.Length > 0)
+                builder.Append($" where {SelectSqlData.WhereSql}");
+
+            if (SelectSqlData.GroupBy.Length > 0)
+                builder.Append($" group by {SelectSqlData.GroupBy}");
+
+            if (SelectSqlData.Having.Length > 0)
+                builder.Append($" having {SelectSqlData.Having}");
+
+            if (SelectSqlData.OrderBy.Length > 0)
+                builder.Append($" order by {SelectSqlData.OrderBy}");
+
+            return builder.ToString();
+        }
+
+        protected virtual string BuildPagingSql()
+        {
+            var sqlStr = BuildNoPagingSql();
+
+            sqlStr += $" limit {SelectSqlData.GetFromItemNumber() - 1}, {SelectSqlData.PagingItemsPerPage}";
+
+            return sqlStr;
         }
     }
 
-    internal class SelectBuilderData
+    internal class SelectBuilderData : SqlBuilderData
     {
         internal string Select { get; set; } = string.Empty;
 
