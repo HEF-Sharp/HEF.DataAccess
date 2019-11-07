@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace HEF.Sql
@@ -7,13 +6,6 @@ namespace HEF.Sql
     public class InsertSqlBuilder : ISqlBuilder
     {
         internal InsertBuilderData InsertSqlData { get; } = new InsertBuilderData();
-
-        public InsertSqlBuilder(ISqlFormatter sqlFormatter)
-        {
-            SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
-        }
-
-        protected ISqlFormatter SqlFormatter { get; }
 
         public InsertSqlBuilder Table(string tableName)
         {
@@ -47,10 +39,10 @@ namespace HEF.Sql
         {
             var sortedColumns = new SortedList<string, SqlBuilderColumn>(InsertSqlData.Columns.ToDictionary(m => m.ColumnName));
 
-            var columnsStr = string.Join(",", sortedColumns.Keys.Select(columnName => SqlFormatter.Name(columnName)));
-            var parametersStr = string.Join(",", sortedColumns.Values.Select(column => SqlFormatter.Parameter(column.ParameterName)));
+            var columnsStr = string.Join(",", sortedColumns.Keys);
+            var parametersStr = string.Join(",", sortedColumns.Values.Select(column => column.ParameterName));
 
-            return $"insert into {SqlFormatter.Name(InsertSqlData.TableName)} ({columnsStr}) values ({parametersStr})";
+            return $"insert into {InsertSqlData.TableName} ({columnsStr}) values ({parametersStr})";
         }
     }
 

@@ -10,7 +10,7 @@ namespace HEF.Sql
             Formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
         }
 
-        protected ISqlFormatter Formatter { get; }
+        public ISqlFormatter Formatter { get; }
 
         public string TableName(IEntityMapper mapper)
         {
