@@ -10,7 +10,7 @@ namespace HEF.Sql
             Formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
         }
 
-        public ISqlFormatter Formatter { get; }
+        protected ISqlFormatter Formatter { get; }
 
         public string TableName(IEntityMapper mapper)
         {
@@ -38,6 +38,21 @@ namespace HEF.Sql
                 return Formatter.Alias(Formatter.Name(propertyMap.ColumnName), Formatter.Name(propertyMap.Name));
 
             return Formatter.Name(propertyMap.ColumnName);
+        }
+
+        string ISqlFormatter.Name(string name)
+        {
+            return Formatter.Name(name);
+        }
+
+        string ISqlFormatter.Alias(string name, string alias)
+        {
+            return Formatter.Alias(name, alias);
+        }
+
+        string ISqlFormatter.Parameter(string name)
+        {
+            return Formatter.Parameter(name);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace HEF.Sql
 {
     public class InsertSqlBuilder : ISqlBuilder
     {
-        internal InsertBuilderData InsertSqlData { get; } = new InsertBuilderData();
+        private InsertBuilderData InsertSqlData { get; } = new InsertBuilderData();
 
         public InsertSqlBuilder Table(string tableName)
         {
@@ -48,8 +48,8 @@ namespace HEF.Sql
 
     internal class InsertBuilderData : SqlBuilderData
     {
-        internal string TableName { get; set; }
+        internal string TableName { get; set; } = string.Empty;
 
-        internal IList<SqlBuilderColumn> Columns { get; set; }
+        internal IList<SqlBuilderColumn> Columns { get; set; } = new List<SqlBuilderColumn>();
     }
 }

@@ -88,10 +88,9 @@ namespace HEF.Sql
 
         private void MappingEntityProperty(TEntity entity, IPropertyMap propertyMap)
         {
-            var propertyValue = propertyMap.PropertyInfo.GetValue(entity);
-            var parameterName = SqlFormatter.Formatter.Parameter(propertyMap.Name);
+            var propertyValue = propertyMap.PropertyInfo.GetValue(entity);            
 
-            Column(SqlFormatter.ColumnName(propertyMap), parameterName, propertyValue);
+            Column(SqlFormatter.ColumnName(propertyMap), SqlFormatter.Parameter(propertyMap.Name), propertyValue);
         }
     }
 }

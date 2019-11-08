@@ -5,7 +5,7 @@ namespace HEF.Sql
 {
     public class SelectSqlBuilder : ISqlBuilder
     {
-        internal SelectBuilderData SelectSqlData { get; } = new SelectBuilderData();
+        private SelectBuilderData SelectSqlData { get; } = new SelectBuilderData();
 
         public SelectSqlBuilder Select(string sql)
         {

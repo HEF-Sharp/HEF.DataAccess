@@ -2,10 +2,8 @@
 
 namespace HEF.Sql
 {
-    public interface IEntitySqlFormatter
+    public interface IEntitySqlFormatter : ISqlFormatter
     {
-        ISqlFormatter Formatter { get; }
-
         string TableName(IEntityMapper mapper);
 
         /// <summary>
