@@ -1,5 +1,5 @@
-﻿using HEF.Entity;
-using HEF.Entity.Mapper;
+﻿using HEF.Entity.Mapper;
+using HEF.Sql.Entity;
 using HEF.Util;
 using System;
 using System.Collections.Generic;
@@ -92,20 +92,10 @@ namespace HEF.Sql
         /// <returns></returns>
         private IEnumerable<IPropertyMap> GetSelectProperties(bool isExclude,
             params Expression<Func<TEntity, object>>[] propertyExpressions)
-        {            
-            var selectProperties = Mapper.Properties.Where(p => !p.Ignored);  //排除忽略的属性
+        {
+            Func<IPropertyMap, bool> selectPredicate = p => !p.Ignored;  //排除忽略的属性
 
-            var propertyNames = propertyExpressions.Select(m => m.ParsePropertyName()) ?? Array.Empty<string>();
-
-            Func<string, bool> propertyPredicate = (name) => propertyNames.Contains(name);
-            if (isExclude)
-            {
-                propertyPredicate = (name) => !propertyNames.Contains(name);
-            }
-
-            selectProperties = selectProperties.Where(p => propertyPredicate(p.Name));
-
-            return selectProperties;
+            return Mapper.GetProperties(selectPredicate, isExclude, propertyExpressions);
         }
     }
 }

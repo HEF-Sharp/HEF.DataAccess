@@ -8,9 +8,9 @@ using System.Linq.Expressions;
 
 namespace HEF.Sql
 {
-    public class InsertSqlBuilder<TEntity> : InsertSqlBuilder where TEntity : class
+    public class UpdateSqlBuilder<TEntity> : UpdateSqlBuilder where TEntity : class
     {
-        public InsertSqlBuilder(IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
+        public UpdateSqlBuilder(IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
         {
             if (mapperProvider == null)
                 throw new ArgumentNullException(nameof(mapperProvider));
@@ -27,14 +27,14 @@ namespace HEF.Sql
 
         protected IEntitySqlFormatter SqlFormatter { get; }
 
-        public InsertSqlBuilder<TEntity> Table()
+        public UpdateSqlBuilder<TEntity> Table()
         {
             Table(SqlFormatter.TableName(Mapper));
 
             return this;
         }
 
-        public InsertSqlBuilder<TEntity> Column(TEntity entity, params Expression<Func<TEntity, object>>[] propertyExpressions)
+        public UpdateSqlBuilder<TEntity> Column(TEntity entity, params Expression<Func<TEntity, object>>[] propertyExpressions)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -42,43 +42,48 @@ namespace HEF.Sql
             if (propertyExpressions.IsEmpty())
                 throw new ArgumentNullException(nameof(propertyExpressions));
 
-            var insertProperties = GetInsertProperties(false, propertyExpressions).ToList();
+            var updateProperties = GetUpdateProperties(false, propertyExpressions).ToList();
 
-            insertProperties.ForEach(property => MappingEntityProperty(entity, property));
+            updateProperties.ForEach(property => MappingEntityProperty(entity, property));
 
             return this;
         }
 
-        public InsertSqlBuilder<TEntity> ColumnIgnore(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
+        public UpdateSqlBuilder<TEntity> ColumnIgnore(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            var insertProperties = GetInsertProperties(true, ignorePropertyExpressions).ToList();
+            var updateProperties = GetUpdateProperties(true, ignorePropertyExpressions).ToList();
 
-            insertProperties.ForEach(property => MappingEntityProperty(entity, property));
+            updateProperties.ForEach(property => MappingEntityProperty(entity, property));
 
             return this;
         }
 
+        public UpdateSqlBuilder<TEntity> Where(Expression<Func<TEntity, bool>> predicateExpression)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
-        /// 获取Insert属性
+        /// 获取Update属性
         /// </summary>
         /// <param name="isExclude">是否排除</param>
         /// <param name="propertyExpressions"></param>
         /// <returns></returns>
-        private IEnumerable<IPropertyMap> GetInsertProperties(bool isExclude,
+        private IEnumerable<IPropertyMap> GetUpdateProperties(bool isExclude,
             params Expression<Func<TEntity, object>>[] propertyExpressions)
         {
-            Func<IPropertyMap, bool> insertPredicate =
-                p => !p.Ignored && !p.IsReadOnly && p.KeyType != KeyType.Identity;  //排除自增主键和只读忽略的属性
+            Func<IPropertyMap, bool> updatePredicate =
+                p => !p.Ignored && !p.IsReadOnly && p.KeyType == KeyType.NotAKey;  //排除主键和只读忽略的属性
 
-            return Mapper.GetProperties(insertPredicate, isExclude, propertyExpressions);
+            return Mapper.GetProperties(updatePredicate, isExclude, propertyExpressions);
         }
 
         private void MappingEntityProperty(TEntity entity, IPropertyMap propertyMap)
         {
-            var propertyValue = propertyMap.PropertyInfo.GetValue(entity);            
+            var propertyValue = propertyMap.PropertyInfo.GetValue(entity);
 
             Column(SqlFormatter.ColumnName(propertyMap), SqlFormatter.Parameter(propertyMap.Name), propertyValue);
         }
