@@ -1,12 +1,11 @@
 ﻿using HEF.Entity.Mapper;
-using HEF.Sql.Entity;
 using HEF.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace HEF.Sql
+namespace HEF.Sql.Entity
 {
     public class SelectSqlBuilder<TEntity> : SelectSqlBuilder where TEntity : class
     {
