@@ -3,23 +3,23 @@ using System.Linq;
 
 namespace HEF.Sql
 {
-    public class InsertSqlBuilder : ISqlBuilder
+    public class InsertSqlBuilder : IInsertSqlBuilder
     {
         private InsertBuilderData InsertSqlData { get; } = new InsertBuilderData();
 
-        public InsertSqlBuilder Table(string tableName)
+        public IInsertSqlBuilder Table(string tableName)
         {
             InsertSqlData.TableName = tableName;
 
             return this;
         }
 
-        public InsertSqlBuilder Column(string columnName, object value)
+        public IInsertSqlBuilder Column(string columnName, object value)
         {
             return Column(columnName, columnName, value);
         }
 
-        public InsertSqlBuilder Column(string columnName, string parameterName, object value)
+        public IInsertSqlBuilder Column(string columnName, string parameterName, object value)
         {
             InsertSqlData.Columns.Add(new SqlBuilderColumn(columnName, parameterName));
 

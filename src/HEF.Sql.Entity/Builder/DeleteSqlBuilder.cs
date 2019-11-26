@@ -4,20 +4,28 @@ using System.Linq.Expressions;
 
 namespace HEF.Sql.Entity
 {
-    public class DeleteSqlBuilder<TEntity> : DeleteSqlBuilder where TEntity : class
+    public class DeleteSqlBuilder<TEntity> where TEntity : class
     {
-        public DeleteSqlBuilder(IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
+        public DeleteSqlBuilder(IDeleteSqlBuilder deleteSqlBuilder,
+            IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
         {
+            if (deleteSqlBuilder == null)
+                throw new ArgumentNullException(nameof(deleteSqlBuilder));
+
             if (mapperProvider == null)
                 throw new ArgumentNullException(nameof(mapperProvider));
 
             if (sqlFormatter == null)
                 throw new ArgumentNullException(nameof(sqlFormatter));
 
+            SqlBuilder = deleteSqlBuilder;
+
             Mapper = mapperProvider.GetEntityMapper<TEntity>();
 
             SqlFormatter = sqlFormatter;
         }
+
+        public IDeleteSqlBuilder SqlBuilder { get; }
 
         protected IEntityMapper Mapper { get; }
 
@@ -25,7 +33,7 @@ namespace HEF.Sql.Entity
 
         public DeleteSqlBuilder<TEntity> Table()
         {
-            Table(SqlFormatter.TableName(Mapper));
+            SqlBuilder.Table(SqlFormatter.TableName(Mapper));
 
             return this;
         }

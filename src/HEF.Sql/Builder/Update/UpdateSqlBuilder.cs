@@ -3,23 +3,23 @@ using System.Text;
 
 namespace HEF.Sql
 {
-    public class UpdateSqlBuilder : ISqlBuilder
+    public class UpdateSqlBuilder : IUpdateSqlBuilder
     {
         private UpdateBuilderData UpdateSqlData { get; } = new UpdateBuilderData();
 
-        public UpdateSqlBuilder Table(string tableName)
+        public IUpdateSqlBuilder Table(string tableName)
         {
             UpdateSqlData.TableName = tableName;
 
             return this;
         }
 
-        public UpdateSqlBuilder Column(string columnName, object value)
+        public IUpdateSqlBuilder Column(string columnName, object value)
         {
             return Column(columnName, columnName, value);
         }
 
-        public UpdateSqlBuilder Column(string columnName, string parameterName, object value)
+        public IUpdateSqlBuilder Column(string columnName, string parameterName, object value)
         {
             UpdateSqlData.Columns.Add(new SqlBuilderColumn(columnName, parameterName));
 
@@ -28,7 +28,7 @@ namespace HEF.Sql
             return this;
         }
 
-        public UpdateSqlBuilder Where(string sql)
+        public IUpdateSqlBuilder Where(string sql)
         {
             if (UpdateSqlData.WhereSql.Length > 0)
                 UpdateSqlData.WhereSql += " and ";
@@ -37,7 +37,7 @@ namespace HEF.Sql
             return this;
         }
 
-        public UpdateSqlBuilder Parameter(string name, object value)
+        public IUpdateSqlBuilder Parameter(string name, object value)
         {
             UpdateSqlData.Parameters.Add(new SqlParameter(name, value));
 

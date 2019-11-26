@@ -3,18 +3,18 @@ using System.Text;
 
 namespace HEF.Sql
 {
-    public class DeleteSqlBuilder : ISqlBuilder
+    public class DeleteSqlBuilder : IDeleteSqlBuilder
     {
         private DeleteBuilderData DeleteSqlData { get; } = new DeleteBuilderData();
 
-        public DeleteSqlBuilder Table(string tableName)
+        public IDeleteSqlBuilder Table(string tableName)
         {
             DeleteSqlData.TableName = tableName;
 
             return this;
         }
 
-        public DeleteSqlBuilder Where(string sql)
+        public IDeleteSqlBuilder Where(string sql)
         {
             if (DeleteSqlData.WhereSql.Length > 0)
                 DeleteSqlData.WhereSql += " and ";
@@ -23,7 +23,7 @@ namespace HEF.Sql
             return this;
         }
 
-        public DeleteSqlBuilder Parameter(string name, object value)
+        public IDeleteSqlBuilder Parameter(string name, object value)
         {
             DeleteSqlData.Parameters.Add(new SqlParameter(name, value));
 

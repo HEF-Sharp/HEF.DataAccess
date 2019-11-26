@@ -7,20 +7,28 @@ using System.Linq.Expressions;
 
 namespace HEF.Sql.Entity
 {
-    public class SelectSqlBuilder<TEntity> : SelectSqlBuilder where TEntity : class
+    public class SelectSqlBuilder<TEntity> where TEntity : class
     {
-        public SelectSqlBuilder(IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
+        public SelectSqlBuilder(ISelectSqlBuilder selectSqlBuilder,
+            IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
         {
+            if (selectSqlBuilder == null)
+                throw new ArgumentNullException(nameof(selectSqlBuilder));
+
             if (mapperProvider == null)
                 throw new ArgumentNullException(nameof(mapperProvider));
 
             if (sqlFormatter == null)
                 throw new ArgumentNullException(nameof(sqlFormatter));
 
+            SqlBuilder = selectSqlBuilder;
+
             Mapper = mapperProvider.GetEntityMapper<TEntity>();
 
             SqlFormatter = sqlFormatter;
         }
+
+        public ISelectSqlBuilder SqlBuilder { get; }
 
         protected IEntityMapper Mapper { get; }
 
@@ -33,7 +41,7 @@ namespace HEF.Sql.Entity
 
             var selectProperties = GetSelectProperties(false, propertyExpressions);
 
-            Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p, true))));
+            SqlBuilder.Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p, true))));
 
             return this;
         }
@@ -42,14 +50,14 @@ namespace HEF.Sql.Entity
         {
             var selectProperties = GetSelectProperties(true, ignorePropertyExpressions);
 
-            Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p, true))));
+            SqlBuilder.Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p, true))));
 
             return this;
         }
 
         public SelectSqlBuilder<TEntity> Table()
         {
-            From(SqlFormatter.TableName(Mapper));
+            SqlBuilder.From(SqlFormatter.TableName(Mapper));
 
             return this;
         }
@@ -66,7 +74,7 @@ namespace HEF.Sql.Entity
 
             var groupByProperties = GetSelectProperties(false, propertyExpressions);
 
-            GroupBy(string.Join(",", groupByProperties.Select(p => SqlFormatter.ColumnName(p))));
+            SqlBuilder.GroupBy(string.Join(",", groupByProperties.Select(p => SqlFormatter.ColumnName(p))));
 
             return this;
         }
@@ -78,7 +86,7 @@ namespace HEF.Sql.Entity
 
             var orderByProperties = GetSelectProperties(false, propertyExpressions);
 
-            OrderBy(string.Join(",", orderByProperties.Select(p => SqlFormatter.ColumnName(p))));
+            SqlBuilder.OrderBy(string.Join(",", orderByProperties.Select(p => SqlFormatter.ColumnName(p))));
 
             return this;
         }

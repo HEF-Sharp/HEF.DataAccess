@@ -3,25 +3,25 @@ using System.Text;
 
 namespace HEF.Sql
 {
-    public class SelectSqlBuilder : ISqlBuilder
+    public class SelectSqlBuilder : ISelectSqlBuilder
     {
         private SelectBuilderData SelectSqlData { get; } = new SelectBuilderData();
 
-        public SelectSqlBuilder Select(string sql)
+        public ISelectSqlBuilder Select(string sql)
         {
             SelectSqlData.Select += sql;
 
             return this;
         }
 
-        public SelectSqlBuilder From(string sql)
+        public ISelectSqlBuilder From(string sql)
         {
             SelectSqlData.From += sql;
 
             return this;
         }
 
-        public SelectSqlBuilder Where(string sql)
+        public ISelectSqlBuilder Where(string sql)
         {
             if (SelectSqlData.WhereSql.Length > 0)
                 SelectSqlData.WhereSql += " and ";
@@ -30,28 +30,28 @@ namespace HEF.Sql
             return this;
         }
 
-        public SelectSqlBuilder GroupBy(string sql)
+        public ISelectSqlBuilder GroupBy(string sql)
         {
             SelectSqlData.GroupBy += sql;
 
             return this;
         }
 
-        public SelectSqlBuilder OrderBy(string sql)
+        public ISelectSqlBuilder OrderBy(string sql)
         {
             SelectSqlData.OrderBy += sql;
 
             return this;
         }
 
-        public SelectSqlBuilder Having(string sql)
+        public ISelectSqlBuilder Having(string sql)
         {
             SelectSqlData.Having += sql;
 
             return this;
         }
 
-        public SelectSqlBuilder Paging(int currentPage, int itemsPerPage)
+        public ISelectSqlBuilder Paging(int currentPage, int itemsPerPage)
         {
             SelectSqlData.PagingCurrentPage = currentPage;
             SelectSqlData.PagingItemsPerPage = itemsPerPage;
@@ -59,7 +59,7 @@ namespace HEF.Sql
             return this;
         }
 
-        public SelectSqlBuilder Parameter(string name, object value)
+        public ISelectSqlBuilder Parameter(string name, object value)
         {
             SelectSqlData.Parameters.Add(new SqlParameter(name, value));
 

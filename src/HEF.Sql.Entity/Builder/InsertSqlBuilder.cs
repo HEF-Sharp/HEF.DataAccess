@@ -7,20 +7,28 @@ using System.Linq.Expressions;
 
 namespace HEF.Sql.Entity
 {
-    public class InsertSqlBuilder<TEntity> : InsertSqlBuilder where TEntity : class
+    public class InsertSqlBuilder<TEntity> where TEntity : class
     {
-        public InsertSqlBuilder(IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
+        public InsertSqlBuilder(IInsertSqlBuilder insertSqlBuilder,
+            IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
         {
+            if (insertSqlBuilder == null)
+                throw new ArgumentNullException(nameof(insertSqlBuilder));
+
             if (mapperProvider == null)
                 throw new ArgumentNullException(nameof(mapperProvider));
 
             if (sqlFormatter == null)
                 throw new ArgumentNullException(nameof(sqlFormatter));
 
+            SqlBuilder = insertSqlBuilder;
+            
             Mapper = mapperProvider.GetEntityMapper<TEntity>();
 
             SqlFormatter = sqlFormatter;
         }
+
+        public IInsertSqlBuilder SqlBuilder { get; }
 
         protected IEntityMapper Mapper { get; }
 
@@ -28,7 +36,7 @@ namespace HEF.Sql.Entity
 
         public InsertSqlBuilder<TEntity> Table()
         {
-            Table(SqlFormatter.TableName(Mapper));
+            SqlBuilder.Table(SqlFormatter.TableName(Mapper));
 
             return this;
         }
@@ -77,9 +85,9 @@ namespace HEF.Sql.Entity
 
         private void MappingEntityProperty(TEntity entity, IPropertyMap propertyMap)
         {
-            var propertyValue = propertyMap.PropertyInfo.GetValue(entity);            
+            var propertyValue = propertyMap.PropertyInfo.GetValue(entity);
 
-            Column(SqlFormatter.ColumnName(propertyMap), SqlFormatter.Parameter(propertyMap.Name), propertyValue);
+            SqlBuilder.Column(SqlFormatter.ColumnName(propertyMap), SqlFormatter.Parameter(propertyMap.Name), propertyValue);
         }
     }
 }
