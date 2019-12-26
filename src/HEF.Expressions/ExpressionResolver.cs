@@ -10,12 +10,12 @@ namespace HEF.Expressions
             if (expression == null)
                 throw new ArgumentNullException(nameof(expression));
             
-            if (IsResolveNodeType(expression.NodeType))
+            if (IsResolveNodeType(expression))
                 return base.Visit(expression);
 
             throw new NotSupportedException($"The LINQ expression node of type {expression.NodeType} is not supported");
         }
 
-        protected abstract bool IsResolveNodeType(ExpressionType nodeType);
+        protected abstract bool IsResolveNodeType(Expression expression);
     }
 }

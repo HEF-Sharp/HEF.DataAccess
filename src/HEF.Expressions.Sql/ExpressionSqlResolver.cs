@@ -1,13 +1,19 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace HEF.Expressions.Sql
 {
     public class ExpressionSqlResolver : ExpressionResolver
     {
-        protected override bool IsResolveNodeType(ExpressionType nodeType)
+        protected override bool IsResolveNodeType(Expression expression)
         {
-            throw new NotImplementedException();
+            return expression.IsLambda() ||
+                expression.IsMethodCall() ||
+                expression.IsMemberAccess() ||
+                expression.IsConstant() ||
+                expression.IsParameter() ||
+                expression.IsLogicOperation() ||
+                expression.IsCompareOperation() ||
+                expression.IsMathOperation();
         }
     }
 }
