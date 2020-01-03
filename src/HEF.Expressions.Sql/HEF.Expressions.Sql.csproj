@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HEF.Expressions\HEF.Expressions.csproj" />
+    <ProjectReference Include="..\HEF.Sql.Entity\HEF.Sql.Entity.csproj" />
+    <ProjectReference Include="..\HEF.Sql\HEF.Sql.csproj" />
   </ItemGroup>
 
 </Project>

@@ -56,8 +56,7 @@ namespace HEF.Expressions
                 expr.NodeType == ExpressionType.Multiply ||
                 expr.NodeType == ExpressionType.MultiplyChecked ||
                 expr.NodeType == ExpressionType.Divide ||
-                expr.NodeType == ExpressionType.Modulo ||
-                expr.NodeType == ExpressionType.Power;
+                expr.NodeType == ExpressionType.Modulo;
         }
     }
 }
