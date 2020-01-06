@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HEF.Expressions", "src\HEF.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HEF.Expressions.Sql", "src\HEF.Expressions.Sql\HEF.Expressions.Sql.csproj", "{8D23F688-B640-4889-BE23-AA33CD550462}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HEF.Expressions.Sql.Test", "test\HEF.Expressions.Sql.Test\HEF.Expressions.Sql.Test.csproj", "{A824DF0B-F92D-45D6-90C6-163C0ECFC874}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{8D23F688-B640-4889-BE23-AA33CD550462}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D23F688-B640-4889-BE23-AA33CD550462}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D23F688-B640-4889-BE23-AA33CD550462}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A824DF0B-F92D-45D6-90C6-163C0ECFC874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A824DF0B-F92D-45D6-90C6-163C0ECFC874}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A824DF0B-F92D-45D6-90C6-163C0ECFC874}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A824DF0B-F92D-45D6-90C6-163C0ECFC874}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{A19402F7-1531-4A5F-8CF8-093DBF501081} = {C3881D12-BADA-4261-A823-6DF825DD468A}
 		{61CD8BF5-136E-4C6A-9F38-C1160EF0F152} = {B7604DB4-D15F-44AD-AD05-03CDF4BECC1A}
 		{8D23F688-B640-4889-BE23-AA33CD550462} = {C3881D12-BADA-4261-A823-6DF825DD468A}
+		{A824DF0B-F92D-45D6-90C6-163C0ECFC874} = {B2E25360-0B31-4AF2-903A-CA601BFE2412}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {82FC58E7-FFFB-4968-A0BC-AB73B8C72ED2}
