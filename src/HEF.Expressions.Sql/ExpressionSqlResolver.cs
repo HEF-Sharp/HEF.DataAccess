@@ -9,25 +9,23 @@ namespace HEF.Expressions.Sql
     public class ExpressionSqlResolver : IExpressionSqlResolver
     {
         public ExpressionSqlResolver(IEntityMapperProvider mapperProvider,
-            IEntitySqlFormatter sqlFormatter)
+            IEntitySqlFormatter sqlFormatter,
+            IMethodCallSqlResolver methodCallSqlResolver)
         {
-            if (mapperProvider == null)
-                throw new ArgumentNullException(nameof(mapperProvider));
-
-            if (sqlFormatter == null)
-                throw new ArgumentNullException(nameof(sqlFormatter));
-
-            MapperProvider = mapperProvider;
-            SqlFormatter = sqlFormatter;
+            MapperProvider = mapperProvider ?? throw new ArgumentNullException(nameof(mapperProvider));
+            SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
+            MethodCallSqlResolver = methodCallSqlResolver ?? throw new ArgumentNullException(nameof(methodCallSqlResolver));
         }
 
-        protected IEntityMapperProvider MapperProvider { get; }
+        public IEntityMapperProvider MapperProvider { get; }
 
-        protected IEntitySqlFormatter SqlFormatter { get; }
+        public IEntitySqlFormatter SqlFormatter { get; }
+
+        public IMethodCallSqlResolver MethodCallSqlResolver { get; }
 
         public virtual SqlSentence Resolve(Expression expression)
         {
-            var resolveExecutor = new ExpressionSqlResolveExecutor(MapperProvider, SqlFormatter, expression);
+            var resolveExecutor = new ExpressionSqlResolveExecutor(MapperProvider, SqlFormatter, MethodCallSqlResolver, expression);
 
             return resolveExecutor.ResolveSqlSentence;
         }

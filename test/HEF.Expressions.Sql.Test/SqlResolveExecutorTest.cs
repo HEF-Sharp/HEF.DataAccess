@@ -49,6 +49,17 @@ namespace HEF.Expressions.Sql.Test
         }
 
         [Fact]
+        public void TestTranslateEqualsMethods()
+        {
+            Expression<Func<Customer, bool>> customerPredicate = x => object.Equals(x.CompanyName, "drore") && x.City.Equals("Hangzhou");
+
+            var sqlSentence = TestStatic.ExprSqlResolver.Resolve(customerPredicate);
+
+            Assert.Equal("((companyName = @p0) and (city = @p1))", sqlSentence.SqlText, true);
+            Assert.Equal(2, sqlSentence.Parameters.Length);
+        }
+
+        [Fact]
         public void TestTranslateByMySqlResolver()
         {
             Expression<Func<Customer, bool>> customerPredicate = x => x.CompanyName == "drore" && x.City == "Hangzhou";

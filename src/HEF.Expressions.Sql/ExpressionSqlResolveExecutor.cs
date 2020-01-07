@@ -52,28 +52,25 @@ namespace HEF.Expressions.Sql
         #endregion   
 
         public ExpressionSqlResolveExecutor(IEntityMapperProvider mapperProvider,
-            IEntitySqlFormatter sqlFormatter, Expression expression)
+            IEntitySqlFormatter sqlFormatter,
+            IMethodCallSqlResolver methodCallSqlResolver,
+            Expression expression)
         {
-            if (mapperProvider == null)
-                throw new ArgumentNullException(nameof(mapperProvider));
+            MapperProvider = mapperProvider ?? throw new ArgumentNullException(nameof(mapperProvider));
+            SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
+            MethodCallSqlResolver = methodCallSqlResolver ?? throw new ArgumentNullException(nameof(methodCallSqlResolver));
 
-            if (sqlFormatter == null)
-                throw new ArgumentNullException(nameof(sqlFormatter));
+            ToResolveExpression = expression ?? throw new ArgumentNullException(nameof(expression));
 
-            if (expression == null)
-                throw new ArgumentNullException(nameof(expression));
-
-            MapperProvider = mapperProvider;
-            SqlFormatter = sqlFormatter;
-            ToResolveExpression = expression;
-
-            SqlStrings = new StringBuilder();            
+            SqlStrings = new StringBuilder();
             ResolveSqlSentence = Execute(ToResolveExpression);
         }
 
         public IEntityMapperProvider MapperProvider { get; }
 
         public IEntitySqlFormatter SqlFormatter { get; }
+
+        public IMethodCallSqlResolver MethodCallSqlResolver { get; }
 
         public Expression ToResolveExpression { get; }
 
@@ -205,24 +202,9 @@ namespace HEF.Expressions.Sql
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (IsObjectEqualsMethod(node))
-            {
-                Write("(");
-                Visit(node.Arguments[0]);
-                Write(" = ");
-                Visit(node.Arguments[1]);
-                Write(")");
+            if (MethodCallSqlResolver.VisitMethodCall(node, Write, Visit))
                 return node;
-            }
-            else if (IsInstanceEqualsMethod(node))
-            {
-                Write("(");
-                Visit(node.Object);
-                Write(" = ");
-                Visit(node.Arguments[0]);
-                Write(")");
-                return node;
-            }
+            
             throw new NotSupportedException(string.Format("The method '{0}' is not supported", node.Method.Name));
         }
 
@@ -348,17 +330,6 @@ namespace HEF.Expressions.Sql
         {
             return (expr.Method.DeclaringType == typeof(string) || expr.Method.DeclaringType == typeof(decimal))
                 && expr.Method.Name == "Compare" && expr.Method.IsStatic && expr.Arguments.Count == 2;
-        }
-
-        protected virtual bool IsObjectEqualsMethod(MethodCallExpression expr)
-        {
-            return expr.Method.Name == "Equals" && expr.Method.IsStatic && expr.Method.DeclaringType == typeof(object);
-        }
-
-        protected virtual bool IsInstanceEqualsMethod(MethodCallExpression expr)
-        {
-            return expr.Method.Name == "Equals" && !expr.Method.IsStatic
-                && expr.Arguments.Count == 1 && expr.Object.Type == expr.Arguments[0].Type;
         }
 
         protected virtual void Write(object value)

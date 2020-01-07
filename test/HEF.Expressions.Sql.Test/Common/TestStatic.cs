@@ -12,8 +12,10 @@ namespace HEF.Expressions.Sql.Test
 
         public static IEntitySqlFormatter MySqlFormatter = new EntitySqlFormatter(new MySqlFormatter());
 
-        public static IExpressionSqlResolver ExprSqlResolver = new ExpressionSqlResolver(MapperProvider, SqlFormatter);
+        public static IMethodCallSqlResolver MethodSqlResolver = new MethodCallSqlResolver();
 
-        public static IExpressionSqlResolver ExprMySqlResolver = new ExpressionSqlResolver(MapperProvider, MySqlFormatter);
+        public static IExpressionSqlResolver ExprSqlResolver = new ExpressionSqlResolver(MapperProvider, SqlFormatter, MethodSqlResolver);
+
+        public static IExpressionSqlResolver ExprMySqlResolver = new ExpressionSqlResolver(MapperProvider, MySqlFormatter, MethodSqlResolver);
     }
 }
