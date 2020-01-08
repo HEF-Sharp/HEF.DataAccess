@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\HEF.Expressions.Sql.MySql\HEF.Expressions.Sql.MySql.csproj" />
     <ProjectReference Include="..\..\src\HEF.Expressions.Sql\HEF.Expressions.Sql.csproj" />
   </ItemGroup>
 
