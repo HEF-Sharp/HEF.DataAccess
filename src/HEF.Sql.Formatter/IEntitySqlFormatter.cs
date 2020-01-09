@@ -1,6 +1,6 @@
 ﻿using HEF.Entity.Mapper;
 
-namespace HEF.Sql.Entity
+namespace HEF.Sql.Formatter
 {
     public interface IEntitySqlFormatter : ISqlFormatter
     {

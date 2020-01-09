@@ -1,4 +1,5 @@
 ﻿using HEF.Entity.Mapper;
+using HEF.Sql.Formatter;
 using HEF.Util;
 using System;
 using System.Collections.Generic;
@@ -12,20 +13,13 @@ namespace HEF.Sql.Entity
         public InsertSqlBuilder(IInsertSqlBuilder insertSqlBuilder,
             IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
         {
-            if (insertSqlBuilder == null)
-                throw new ArgumentNullException(nameof(insertSqlBuilder));
-
             if (mapperProvider == null)
-                throw new ArgumentNullException(nameof(mapperProvider));
-
-            if (sqlFormatter == null)
-                throw new ArgumentNullException(nameof(sqlFormatter));
-
-            SqlBuilder = insertSqlBuilder;
+                throw new ArgumentNullException(nameof(mapperProvider));            
             
             Mapper = mapperProvider.GetEntityMapper<TEntity>();
 
-            SqlFormatter = sqlFormatter;
+            SqlBuilder = insertSqlBuilder ?? throw new ArgumentNullException(nameof(insertSqlBuilder));
+            SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
         }
 
         public IInsertSqlBuilder SqlBuilder { get; }

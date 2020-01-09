@@ -1,6 +1,6 @@
 ﻿using HEF.Entity.Mapper;
 using HEF.Sql;
-using HEF.Sql.Entity;
+using HEF.Sql.Formatter;
 using System;
 using System.Linq.Expressions;
 

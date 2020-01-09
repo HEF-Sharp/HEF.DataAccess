@@ -1,4 +1,6 @@
 ﻿using HEF.Entity.Mapper;
+using HEF.Expressions.Sql;
+using HEF.Sql.Formatter;
 using HEF.Util;
 using System;
 using System.Collections.Generic;
@@ -10,22 +12,17 @@ namespace HEF.Sql.Entity
     public class SelectSqlBuilder<TEntity> where TEntity : class
     {
         public SelectSqlBuilder(ISelectSqlBuilder selectSqlBuilder,
-            IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
+            IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter,
+            IExpressionSqlResolver exprSqlResolver)
         {
-            if (selectSqlBuilder == null)
-                throw new ArgumentNullException(nameof(selectSqlBuilder));
-
             if (mapperProvider == null)
                 throw new ArgumentNullException(nameof(mapperProvider));
 
-            if (sqlFormatter == null)
-                throw new ArgumentNullException(nameof(sqlFormatter));
-
-            SqlBuilder = selectSqlBuilder;
-
             Mapper = mapperProvider.GetEntityMapper<TEntity>();
 
-            SqlFormatter = sqlFormatter;
+            SqlBuilder = selectSqlBuilder ?? throw new ArgumentNullException(nameof(selectSqlBuilder));
+            SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
+            ExprSqlResolver = exprSqlResolver ?? throw new ArgumentNullException(nameof(exprSqlResolver));
         }
 
         public ISelectSqlBuilder SqlBuilder { get; }
@@ -33,6 +30,8 @@ namespace HEF.Sql.Entity
         protected IEntityMapper Mapper { get; }
 
         protected IEntitySqlFormatter SqlFormatter { get; }
+
+        protected IExpressionSqlResolver ExprSqlResolver { get; }
 
         public SelectSqlBuilder<TEntity> Column(params Expression<Func<TEntity, object>>[] propertyExpressions)
         {
@@ -64,7 +63,18 @@ namespace HEF.Sql.Entity
 
         public SelectSqlBuilder<TEntity> Where(Expression<Func<TEntity, bool>> predicateExpression)
         {
-            throw new NotImplementedException();
+            var sqlSentence = ExprSqlResolver.Resolve(predicateExpression);
+
+            SqlBuilder.Where(sqlSentence.SqlText);
+            if (sqlSentence.Parameters.IsNotEmpty())
+            {
+                foreach(var sqlParam in sqlSentence.Parameters)
+                {
+                    SqlBuilder.Parameter(sqlParam.ParameterName, sqlParam.Value);
+                }
+            }
+
+            return this;
         }
 
         public SelectSqlBuilder<TEntity> GroupBy(params Expression<Func<TEntity, object>>[] propertyExpressions)

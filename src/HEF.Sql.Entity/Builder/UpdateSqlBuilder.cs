@@ -1,4 +1,6 @@
 ﻿using HEF.Entity.Mapper;
+using HEF.Expressions.Sql;
+using HEF.Sql.Formatter;
 using HEF.Util;
 using System;
 using System.Collections.Generic;
@@ -10,22 +12,17 @@ namespace HEF.Sql.Entity
     public class UpdateSqlBuilder<TEntity> where TEntity : class
     {
         public UpdateSqlBuilder(IUpdateSqlBuilder updateSqlBuilder,
-            IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)
+            IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter,
+            IExpressionSqlResolver exprSqlResolver)
         {
-            if (updateSqlBuilder == null)
-                throw new ArgumentNullException(nameof(updateSqlBuilder));
-
             if (mapperProvider == null)
-                throw new ArgumentNullException(nameof(mapperProvider));
-
-            if (sqlFormatter == null)
-                throw new ArgumentNullException(nameof(sqlFormatter));
-
-            SqlBuilder = updateSqlBuilder;
+                throw new ArgumentNullException(nameof(mapperProvider));           
 
             Mapper = mapperProvider.GetEntityMapper<TEntity>();
 
-            SqlFormatter = sqlFormatter;
+            SqlBuilder = updateSqlBuilder ?? throw new ArgumentNullException(nameof(updateSqlBuilder));
+            SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
+            ExprSqlResolver = exprSqlResolver ?? throw new ArgumentNullException(nameof(exprSqlResolver));
         }
 
         public IUpdateSqlBuilder SqlBuilder { get; }
@@ -33,6 +30,8 @@ namespace HEF.Sql.Entity
         protected IEntityMapper Mapper { get; }
 
         protected IEntitySqlFormatter SqlFormatter { get; }
+
+        protected IExpressionSqlResolver ExprSqlResolver { get; }
 
         public UpdateSqlBuilder<TEntity> Table()
         {
@@ -70,7 +69,18 @@ namespace HEF.Sql.Entity
 
         public UpdateSqlBuilder<TEntity> Where(Expression<Func<TEntity, bool>> predicateExpression)
         {
-            throw new NotImplementedException();
+            var sqlSentence = ExprSqlResolver.Resolve(predicateExpression);
+
+            SqlBuilder.Where(sqlSentence.SqlText);
+            if (sqlSentence.Parameters.IsNotEmpty())
+            {
+                foreach (var sqlParam in sqlSentence.Parameters)
+                {
+                    SqlBuilder.Parameter(sqlParam.ParameterName, sqlParam.Value);
+                }
+            }
+
+            return this;
         }
 
         /// <summary>

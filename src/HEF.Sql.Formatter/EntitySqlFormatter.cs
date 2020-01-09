@@ -1,7 +1,7 @@
 ﻿using HEF.Entity.Mapper;
 using System;
 
-namespace HEF.Sql.Entity
+namespace HEF.Sql.Formatter
 {
     public class EntitySqlFormatter : IEntitySqlFormatter
     {

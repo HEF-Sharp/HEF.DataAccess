@@ -1,4 +1,4 @@
-﻿namespace HEF.Sql
+﻿namespace HEF.Sql.Formatter
 {
     public interface ISqlFormatter
     {
