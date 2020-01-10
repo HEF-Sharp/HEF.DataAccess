@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HEF.Expressions.Sql.Test
+namespace DataAccess.TestCommon
 {
     public class Customer
     {

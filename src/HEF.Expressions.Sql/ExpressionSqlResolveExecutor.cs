@@ -105,14 +105,26 @@ namespace HEF.Expressions.Sql
 
         protected virtual bool IsResolveNodeType(Expression expression)
         {
-            return expression.IsLambda() ||
-                expression.IsMethodCall() ||
-                expression.IsMemberAccess() ||
-                expression.IsConstant() ||
-                expression.IsParameter() ||
-                expression.IsLogicOperation() ||
-                expression.IsCompareOperation() ||
-                expression.IsMathOperation();
+            return expression.IsLambda()
+                || expression.IsMethodCall()
+                || expression.IsMemberAccess()
+                || expression.IsConstant()
+                || expression.IsParameter()
+                || expression.IsQuote()
+                || expression.IsLogicOperation()
+                || expression.IsCompareOperation()
+                || expression.IsMathOperation();
+        }
+
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            if (node.IsQuote())
+            {
+                Visit(node.Operand);
+                return node;
+            }
+
+            throw new NotSupportedException(string.Format("The unary operator '{0}' is not supported", node.NodeType));
         }
 
         protected override Expression VisitBinary(BinaryExpression node)

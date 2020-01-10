@@ -29,6 +29,11 @@ namespace HEF.Expressions
             return expr.NodeType == ExpressionType.Parameter;
         }
 
+        public static bool IsQuote(this Expression expr)
+        {
+            return expr.NodeType == ExpressionType.Quote;
+        }
+
         public static bool IsLogicOperation(this Expression expr)
         {
             return expr.NodeType == ExpressionType.And ||

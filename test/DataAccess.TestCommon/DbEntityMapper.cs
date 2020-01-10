@@ -1,6 +1,6 @@
 ﻿using HEF.Entity.Mapper;
 
-namespace HEF.Expressions.Sql.Test
+namespace DataAccess.TestCommon
 {
     public class DbEntityMapper<TEntity> : AutoEntityMapper<TEntity>
         where TEntity : class

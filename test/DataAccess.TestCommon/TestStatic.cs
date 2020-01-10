@@ -1,7 +1,8 @@
 ﻿using HEF.Entity.Mapper;
+using HEF.Expressions.Sql;
 using HEF.Sql.Formatter;
 
-namespace HEF.Expressions.Sql.Test
+namespace DataAccess.TestCommon
 {
     public static class TestStatic
     {
