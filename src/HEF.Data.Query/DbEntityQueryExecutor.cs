@@ -16,7 +16,10 @@ namespace HEF.Data.Query
 
         public TResult Execute<TResult>(Expression query)
         {
-            var sqlSentence = ExprSqlResolver.Resolve(query);
+            var queryExpr = new QueryableExpressionVisitor().Visit(query);
+            var selectExpr = GetQuerySelectExpression(queryExpr);
+
+            var sqlSentence = ExprSqlResolver.Resolve(selectExpr.Predicate);
 
             throw new NotImplementedException();
         }
@@ -24,6 +27,16 @@ namespace HEF.Data.Query
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        protected virtual SelectExpression GetQuerySelectExpression(Expression expression)
+        {
+            if (expression is EntityQueryExpression entityQueryExpr)
+            {
+                return (SelectExpression)entityQueryExpr.QueryExpression;
+            }
+
+            return null;
         }
     }
 }
