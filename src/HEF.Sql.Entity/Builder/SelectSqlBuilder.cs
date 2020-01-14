@@ -101,6 +101,30 @@ namespace HEF.Sql.Entity
             return this;
         }
 
+        public SelectSqlBuilder<TEntity> OrderBy(Expression<Func<TEntity, object>> propertyExpression, bool ascending)
+        {
+            if (propertyExpression == null)
+                throw new ArgumentNullException(nameof(propertyExpression));
+
+            var orderByProperty = GetSelectProperties(false, propertyExpression).Single();
+
+            SqlBuilder.OrderBy($"{SqlFormatter.ColumnName(orderByProperty)} {(ascending ? "asc" : "desc")}");
+
+            return this;
+        }
+
+        public SelectSqlBuilder<TEntity> ThenBy(Expression<Func<TEntity, object>> propertyExpression, bool ascending)
+        {
+            if (propertyExpression == null)
+                throw new ArgumentNullException(nameof(propertyExpression));
+
+            var orderByProperty = GetSelectProperties(false, propertyExpression).Single();
+
+            SqlBuilder.OrderBy($", {SqlFormatter.ColumnName(orderByProperty)} {(ascending ? "asc" : "desc")}");
+
+            return this;
+        }
+
         /// <summary>
         /// 获取Select属性
         /// </summary>

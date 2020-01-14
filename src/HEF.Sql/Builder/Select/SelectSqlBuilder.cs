@@ -51,10 +51,24 @@ namespace HEF.Sql
             return this;
         }
 
+        public ISelectSqlBuilder Limit(int count)
+        {
+            SelectSqlData.Limit = count;
+
+            return this;
+        }
+
+        public ISelectSqlBuilder Offset(int count)
+        {
+            SelectSqlData.Offset = count;
+
+            return this;
+        }
+
         public ISelectSqlBuilder Paging(int currentPage, int itemsPerPage)
         {
-            SelectSqlData.PagingCurrentPage = currentPage;
-            SelectSqlData.PagingItemsPerPage = itemsPerPage;
+            SelectSqlData.Limit = itemsPerPage;
+            SelectSqlData.Offset = (currentPage - 1) * itemsPerPage;            
 
             return this;
         }
@@ -75,13 +89,13 @@ namespace HEF.Sql
 
         protected string BuildSql()
         {
-            if (SelectSqlData.IsPaging)
-                return BuildPagingSql();
+            if (SelectSqlData.IsTruncate)
+                return BuildTruncateSql();
 
-            return BuildNoPagingSql();
+            return BuildNoTruncateSql();
         }
 
-        protected string BuildNoPagingSql()
+        protected string BuildNoTruncateSql()
         {
             var builder = new StringBuilder();
 
@@ -102,13 +116,17 @@ namespace HEF.Sql
             return builder.ToString();
         }
 
-        protected virtual string BuildPagingSql()
+        protected virtual string BuildTruncateSql()
         {
-            var sqlStr = BuildNoPagingSql();
+            var builder = new StringBuilder(BuildNoTruncateSql());
 
-            sqlStr += $" limit {SelectSqlData.GetFromItemNumber() - 1}, {SelectSqlData.PagingItemsPerPage}";
+            if (SelectSqlData.Limit > 0)
+                builder.Append($" limit {SelectSqlData.Limit}");
 
-            return sqlStr;
+            if (SelectSqlData.Offset > 0)
+                builder.Append($" offset {SelectSqlData.Offset}");
+
+            return builder.ToString();
         }
     }
 
@@ -126,20 +144,10 @@ namespace HEF.Sql
 
         internal string Having { get; set; } = string.Empty;
 
-        internal int PagingCurrentPage { get; set; } = 1;
+        internal int Limit { get; set; }
 
-        internal int PagingItemsPerPage { get; set; }
+        internal int Offset { get; set; }
 
-        internal bool IsPaging => PagingCurrentPage > 0 && PagingItemsPerPage > 0;
-
-        internal int GetFromItemNumber()
-        {
-            return GetToItemNumber() - PagingItemsPerPage + 1;
-        }
-
-        internal int GetToItemNumber()
-        {
-            return PagingCurrentPage * PagingItemsPerPage;
-        }
+        internal bool IsTruncate => Limit > 0 || Offset > 0;
     }
 }

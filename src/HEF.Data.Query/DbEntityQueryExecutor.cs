@@ -1,4 +1,4 @@
-﻿using HEF.Expressions.Sql;
+﻿using HEF.Sql;
 using System;
 using System.Linq.Expressions;
 using System.Threading;
@@ -7,36 +7,50 @@ namespace HEF.Data.Query
 {
     public class DbEntityQueryExecutor : IDbEntityQueryExecutor
     {
-        public DbEntityQueryExecutor(IExpressionSqlResolver exprSqlResolver)
+        public DbEntityQueryExecutor(IQueryableExpressionVisitorFactory expressionVisitorFactory,
+            IDbConnectionContext dbConnectionContext)
         {
-            ExprSqlResolver = exprSqlResolver ?? throw new ArgumentNullException(nameof(exprSqlResolver));
+            if (expressionVisitorFactory == null)
+                throw new ArgumentNullException(nameof(expressionVisitorFactory));
+
+            ExpressionVisitor = expressionVisitorFactory.Create();
+
+            ConnectionContext = dbConnectionContext;
         }
 
-        protected IExpressionSqlResolver ExprSqlResolver { get; }
+        protected QueryableExpressionVisitor ExpressionVisitor { get; }
+
+        protected IDbConnectionContext ConnectionContext { get; }
 
         public TResult Execute<TResult>(Expression query)
         {
-            var queryExpr = new QueryableExpressionVisitor().Visit(query);
-            var selectExpr = GetQuerySelectExpression(queryExpr);
-
-            var sqlSentence = ExprSqlResolver.Resolve(selectExpr.Predicate);
+            var selectExpr = GetQuerySelectExpression(query);
 
             throw new NotImplementedException();
         }
 
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
+            var selectExpr = GetQuerySelectExpression(query);
+
             throw new NotImplementedException();
         }
 
-        protected virtual SelectExpression GetQuerySelectExpression(Expression expression)
+        protected virtual SelectExpression GetQuerySelectExpression(Expression query)
         {
-            if (expression is EntityQueryExpression entityQueryExpr)
+            var queryExpr = ExpressionVisitor.Visit(query);
+
+            if (queryExpr is EntityQueryExpression entityQueryExpr)
             {
-                return (SelectExpression)entityQueryExpr.QueryExpression;
+                return entityQueryExpr.QueryExpression;
             }
 
             return null;
+        }
+
+        protected virtual ISelectSqlBuilder ConvertToSelectSqlBuilder(SelectExpression selectExpr)
+        {
+            throw new NotImplementedException();
         }
     }
 }

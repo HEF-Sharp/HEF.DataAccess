@@ -20,25 +20,29 @@ namespace HEF.Data.Query
 
         public IReadOnlyList<OrderingExpression> Orderings => _orderings;
 
+        public ConstantExpression Limit { get; private set; }
+
+        public ConstantExpression Offset { get; private set; }
+
         public override Type Type => typeof(object);
 
         public sealed override ExpressionType NodeType => ExpressionType.Extension;
 
-        public void ApplyPredicate(LambdaExpression expression)
+        public virtual void ApplyPredicate(LambdaExpression whereExpression)
         {
-            if (expression == null)
-                throw new ArgumentNullException(nameof(expression));
+            if (whereExpression == null)
+                throw new ArgumentNullException(nameof(whereExpression));
 
-            if (expression.Body is ConstantExpression sqlConstant
-                && (bool)sqlConstant.Value)
+            if (whereExpression.Body is ConstantExpression whereConstant
+                && (bool)whereConstant.Value)
             {
                 return;
             }
 
-            Predicate = CombinePredicates(Predicate, expression);
+            Predicate = CombinePredicates(Predicate, whereExpression);
         }
 
-        public void ApplyOrdering(OrderingExpression orderingExpression)
+        public virtual void ApplyOrdering(OrderingExpression orderingExpression)
         {
             if (orderingExpression == null)
                 throw new ArgumentNullException(nameof(orderingExpression));
@@ -47,7 +51,7 @@ namespace HEF.Data.Query
             _orderings.Add(orderingExpression);
         }
 
-        public void AppendOrdering(OrderingExpression orderingExpression)
+        public virtual void AppendOrdering(OrderingExpression orderingExpression)
         {
             if (orderingExpression == null)
                 throw new ArgumentNullException(nameof(orderingExpression));            
@@ -56,6 +60,22 @@ namespace HEF.Data.Query
             {
                 _orderings.Add(orderingExpression);
             }
+        }
+
+        public virtual void ApplyLimit(Expression countExpression)
+        {
+            if (countExpression == null)
+                throw new ArgumentNullException(nameof(countExpression));
+
+            Limit = countExpression as ConstantExpression;
+        }
+
+        public virtual void ApplyOffset(Expression countExpression)
+        {
+            if (countExpression == null)
+                throw new ArgumentNullException(nameof(countExpression));
+
+            Offset = countExpression as ConstantExpression;
         }
 
         protected virtual LambdaExpression CombinePredicates(LambdaExpression leftPredicate, LambdaExpression rightPredicate)

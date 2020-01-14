@@ -11,17 +11,17 @@ namespace HEF.Data.Query
             if (entityType == null)
                 throw new ArgumentNullException(nameof(entityType));
 
-            Type = GetExpressionType(entityType, querySingle);
+            Type = GetQueryExpressionType(entityType, querySingle);
             QueryExpression = new SelectExpression(entityType);
         }
 
-        public Expression QueryExpression { get; }
+        public SelectExpression QueryExpression { get; }
 
         public override Type Type { get; }
 
         public sealed override ExpressionType NodeType => ExpressionType.Extension;
 
-        protected virtual Type GetExpressionType(Type entityType, bool querySingle)
+        protected virtual Type GetQueryExpressionType(Type entityType, bool querySingle)
             => querySingle ? entityType : typeof(IQueryable<>).MakeGenericType(entityType);
     }
 }

@@ -14,6 +14,10 @@
 
         ISelectSqlBuilder Having(string sql);
 
+        ISelectSqlBuilder Limit(int count);
+
+        ISelectSqlBuilder Offset(int count);
+
         ISelectSqlBuilder Paging(int currentPage, int itemsPerPage);
 
         ISelectSqlBuilder Parameter(string name, object value);
