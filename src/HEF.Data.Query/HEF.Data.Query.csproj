@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HEF.Data\HEF.Data.csproj" />
-    <ProjectReference Include="..\HEF.Sql.Entity\HEF.Sql.Entity.csproj" />
+    <ProjectReference Include="..\HEF.Expressions.Sql\HEF.Expressions.Sql.csproj" />
   </ItemGroup>
 
 </Project>

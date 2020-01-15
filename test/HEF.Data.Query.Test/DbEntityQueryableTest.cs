@@ -9,9 +9,9 @@ namespace HEF.Data.Query.Test
         [Fact]
         public void TestDbEntityQueryable()
         {
-            var customers = new DbEntityQueryable<Customer>(new DbEntityQueryProvider(new DbEntityQueryExecutor(new QueryableExpressionVisitorFactory(), null)));
+            var customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
             var customerList = customers.Where(m => m.CompanyName.StartsWith("drore")).Where(m => m.City == "Hangzhou")
-                .OrderBy(m => m.CompanyName).ThenByDescending(m => m.City).Skip(10).Take(5).ToList();
+                .OrderBy(m => m.createTime).ThenBy(m => m.id).Skip(2).Take(5).ToList();
 
             Assert.True(1 == 1);
         }

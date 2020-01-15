@@ -5,13 +5,13 @@ namespace HEF.Data.Query
 {
     public class OrderingExpression : Expression
     {
-        public OrderingExpression(Expression expression, bool ascending)
+        public OrderingExpression(LambdaExpression expression, bool ascending)
         {
             Expression = expression ?? throw new ArgumentNullException(nameof(expression));
             IsAscending = ascending;
         }
 
-        public Expression Expression { get; }
+        public LambdaExpression Expression { get; }
 
         public bool IsAscending { get; }
 
