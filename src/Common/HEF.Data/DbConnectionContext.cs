@@ -20,6 +20,7 @@ namespace HEF.Data
         #region Transaction
         public IDbConnectionContext UseTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
+            EnsureConnectionOpen();
             Transaction = Connection.BeginTransaction(isolationLevel);
 
             return this;
@@ -37,6 +38,14 @@ namespace HEF.Data
             TransactionAction(() => Transaction.Rollback());
 
             return this;
+        }
+
+        private void EnsureConnectionOpen()
+        {
+            if (Connection.State == ConnectionState.Closed)
+            {
+                Connection.Open();
+            }
         }
 
         private void TransactionAction(Action action)
