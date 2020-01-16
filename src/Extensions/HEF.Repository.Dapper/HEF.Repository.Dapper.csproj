@@ -9,8 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HEF.Data\HEF.Data.csproj" />
-    <ProjectReference Include="..\HEF.Repository\HEF.Repository.csproj" />
+    <ProjectReference Include="..\..\Common\HEF.Data\HEF.Data.csproj" />
+    <ProjectReference Include="..\..\Common\HEF.Repository\HEF.Repository.csproj" />
   </ItemGroup>
   
 </Project>

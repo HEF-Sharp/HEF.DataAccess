@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HEF.Data.MySql\HEF.Data.MySql.csproj" />
-    <ProjectReference Include="..\..\src\HEF.Data.Query\HEF.Data.Query.csproj" />
+    <ProjectReference Include="..\..\src\Extensions\HEF.Data.MySql\HEF.Data.MySql.csproj" />
+    <ProjectReference Include="..\..\src\Extensions\HEF.Data.Query\HEF.Data.Query.csproj" />
     <ProjectReference Include="..\DataAccess.TestCommon\DataAccess.TestCommon.csproj" />
   </ItemGroup>
 

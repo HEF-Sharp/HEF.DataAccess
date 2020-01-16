@@ -5,9 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Sql\HEF.Sql.Formatter\HEF.Sql.Formatter.csproj" />
+    <ProjectReference Include="..\..\Sql\HEF.Sql\HEF.Sql.csproj" />
     <ProjectReference Include="..\HEF.Expressions\HEF.Expressions.csproj" />
-    <ProjectReference Include="..\HEF.Sql.Formatter\HEF.Sql.Formatter.csproj" />
-    <ProjectReference Include="..\HEF.Sql\HEF.Sql.csproj" />
   </ItemGroup>
 
 </Project>

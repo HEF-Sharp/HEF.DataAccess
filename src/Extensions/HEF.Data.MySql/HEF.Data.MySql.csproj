@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HEF.Data\HEF.Data.csproj" />
+    <ProjectReference Include="..\..\Common\HEF.Data\HEF.Data.csproj" />
   </ItemGroup>
 
 </Project>
