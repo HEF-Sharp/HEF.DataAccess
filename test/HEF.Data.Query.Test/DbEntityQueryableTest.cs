@@ -1,4 +1,5 @@
 using DataAccess.TestCommon;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -13,7 +14,7 @@ namespace HEF.Data.Query.Test
             var customerList = customers.Where(m => m.CompanyName.StartsWith("drore")).Where(m => m.City == "Hangzhou")
                 .OrderBy(m => m.createTime).ThenBy(m => m.id).Skip(2).Take(5).ToList();
 
-            Assert.True(1 == 1);
+            Assert.True(customerList.Count > 0);
         }
     }
 }

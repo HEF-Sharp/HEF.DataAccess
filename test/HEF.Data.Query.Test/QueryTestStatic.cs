@@ -12,10 +12,12 @@ namespace HEF.Data.Query.Test
 
         public static IDbConnectionContext ConnectionContext = new DbConnectionContext(ConnectionProvider);
 
+        public static IDbCommandBuilder CommandBuilder = new DbCommandBuilder(ConnectionContext);
+
         public static ISelectSqlBuilderFactory SelectSqlBuilderFactory = new SelectSqlBuilderFactory();
 
         public static IDbEntityQueryExecutor EntityQueryExecutor = new DbEntityQueryExecutor(QueryableExprVistiorFactory,
-            ConnectionContext, SelectSqlBuilderFactory, TestStatic.MapperProvider, TestStatic.MySqlFormatter, TestStatic.ExprMySqlResolver);
+            CommandBuilder, SelectSqlBuilderFactory, TestStatic.MapperProvider, TestStatic.MySqlFormatter, TestStatic.ExprMySqlResolver);
 
         public static IAsyncQueryProvider AsyncQueryProvider = new DbEntityQueryProvider(EntityQueryExecutor);
     }

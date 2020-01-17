@@ -6,6 +6,7 @@ using HEF.Sql.Formatter;
 using HEF.Util;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -15,7 +16,7 @@ namespace HEF.Data.Query
     public class DbEntityQueryExecutor : IDbEntityQueryExecutor
     {
         public DbEntityQueryExecutor(IQueryableExpressionVisitorFactory expressionVisitorFactory,
-            IDbConnectionContext dbConnectionContext,
+            IDbCommandBuilder dbCommandBuilder,
             ISelectSqlBuilderFactory selectSqlBuilderFactory,
             IEntityMapperProvider mapperProvider,
             IEntitySqlFormatter sqlFormatter,
@@ -26,7 +27,7 @@ namespace HEF.Data.Query
 
             ExpressionVisitor = expressionVisitorFactory.Create();
 
-            ConnectionContext = dbConnectionContext ?? throw new ArgumentNullException(nameof(dbConnectionContext));
+            CommandBuilder = dbCommandBuilder ?? throw new ArgumentNullException(nameof(dbCommandBuilder));
 
             SelectSqlBuilderFactory = selectSqlBuilderFactory ?? throw new ArgumentNullException(nameof(selectSqlBuilderFactory));
             MapperProvider = mapperProvider ?? throw new ArgumentNullException(nameof(mapperProvider));
@@ -37,7 +38,7 @@ namespace HEF.Data.Query
         #region Injected Properties
         protected QueryableExpressionVisitor ExpressionVisitor { get; }
 
-        protected IDbConnectionContext ConnectionContext { get; }
+        protected IDbCommandBuilder CommandBuilder { get; }
 
         protected ISelectSqlBuilderFactory SelectSqlBuilderFactory { get; }
 
@@ -54,7 +55,17 @@ namespace HEF.Data.Query
             var selectSqlBuilder = ConvertToSelectSqlBuilder(selectExpr);
             var sqlSentence = selectSqlBuilder.Build();
 
-            throw new NotImplementedException();
+            var elementFactoryExpr = BuildQueryElementFactory(selectExpr.EntityType);
+
+            var queryingEnumerableExpr = Expression.New(
+                typeof(DbQueryingEnumerable<>).MakeGenericType(selectExpr.EntityType).GetConstructors()[0],
+                Expression.Constant(CommandBuilder),
+                Expression.Constant(sqlSentence),
+                Expression.Constant(elementFactoryExpr.Compile()));
+
+            var queryExecutorExpr = Expression.Lambda<Func<TResult>>(queryingEnumerableExpr);
+
+            return queryExecutorExpr.Compile().Invoke();
         }
 
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
@@ -63,7 +74,17 @@ namespace HEF.Data.Query
             var selectSqlBuilder = ConvertToSelectSqlBuilder(selectExpr);
             var sqlSentence = selectSqlBuilder.Build();
 
-            throw new NotImplementedException();
+            var elementFactoryExpr = BuildQueryElementFactory(selectExpr.EntityType);
+
+            var queryingEnumerableExpr = Expression.New(
+                typeof(DbQueryingEnumerable<>).MakeGenericType(selectExpr.EntityType).GetConstructors()[0],
+                Expression.Constant(CommandBuilder),
+                Expression.Constant(sqlSentence),
+                Expression.Constant(elementFactoryExpr.Compile()));
+
+            var queryExecutorExpr = Expression.Lambda<Func<TResult>>(queryingEnumerableExpr);
+
+            return queryExecutorExpr.Compile().Invoke();
         }
 
         protected virtual SelectExpression GetQuerySelectExpression(Expression query)
@@ -141,5 +162,14 @@ namespace HEF.Data.Query
             return mapper.Properties.Where(SelectPropertyPredicate).Where(p => propertyNames.Contains(p.Name));
         }
         #endregion
+
+        protected virtual LambdaExpression BuildQueryElementFactory(Type elementType)
+        {
+            var dataReaderParameter = Expression.Parameter(typeof(DbDataReader), "dataReader");
+            var elementInstance = Expression.New(elementType);
+
+            var delegateType = typeof(Func<,>).MakeGenericType(typeof(DbDataReader), elementType);
+            return Expression.Lambda(delegateType, elementInstance, dataReaderParameter);
+        }
     }
 }
