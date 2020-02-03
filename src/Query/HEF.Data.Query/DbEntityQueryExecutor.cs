@@ -52,15 +52,19 @@ namespace HEF.Data.Query
         public TResult Execute<TResult>(Expression query)
         {
             var selectExpr = GetQuerySelectExpression(query);
-            var selectSqlBuilder = ConvertToSelectSqlBuilder(selectExpr);
+            var mapper = MapperProvider.GetEntityMapper(selectExpr.EntityType);
+            var selectProperties = GetSelectProperties(mapper, selectExpr).ToArray();
+
+            var selectSqlBuilder = ConvertToSelectSqlBuilder(mapper, selectExpr);
             var sqlSentence = selectSqlBuilder.Build();
 
-            var elementFactoryExpr = BuildQueryElementFactory(selectExpr.EntityType);
+            var elementFactoryExpr = BuildQueryElementFactory(selectExpr.EntityType, selectProperties);
 
             var queryingEnumerableExpr = Expression.New(
                 typeof(DbQueryingEnumerable<>).MakeGenericType(selectExpr.EntityType).GetConstructors()[0],
                 Expression.Constant(CommandBuilder),
                 Expression.Constant(sqlSentence),
+                Expression.Constant(selectProperties, typeof(IReadOnlyList<IPropertyMap>)),
                 Expression.Constant(elementFactoryExpr.Compile()));
 
             var queryExecutorExpr = Expression.Lambda<Func<TResult>>(queryingEnumerableExpr);
@@ -71,15 +75,19 @@ namespace HEF.Data.Query
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
         {
             var selectExpr = GetQuerySelectExpression(query);
-            var selectSqlBuilder = ConvertToSelectSqlBuilder(selectExpr);
+            var mapper = MapperProvider.GetEntityMapper(selectExpr.EntityType);
+            var selectProperties = GetSelectProperties(mapper, selectExpr).ToArray();
+
+            var selectSqlBuilder = ConvertToSelectSqlBuilder(mapper, selectExpr);
             var sqlSentence = selectSqlBuilder.Build();
 
-            var elementFactoryExpr = BuildQueryElementFactory(selectExpr.EntityType);
+            var elementFactoryExpr = BuildQueryElementFactory(selectExpr.EntityType, selectProperties);
 
             var queryingEnumerableExpr = Expression.New(
                 typeof(DbQueryingEnumerable<>).MakeGenericType(selectExpr.EntityType).GetConstructors()[0],
                 Expression.Constant(CommandBuilder),
                 Expression.Constant(sqlSentence),
+                Expression.Constant(selectProperties, typeof(IReadOnlyList<IPropertyMap>)),
                 Expression.Constant(elementFactoryExpr.Compile()));
 
             var queryExecutorExpr = Expression.Lambda<Func<TResult>>(queryingEnumerableExpr);
@@ -87,6 +95,7 @@ namespace HEF.Data.Query
             return queryExecutorExpr.Compile().Invoke();
         }
 
+        #region Helper Functions
         protected virtual SelectExpression GetQuerySelectExpression(Expression query)
         {
             var queryExpr = ExpressionVisitor.Visit(query);
@@ -99,16 +108,27 @@ namespace HEF.Data.Query
             return null;
         }
 
-        #region Convert SelectSqlBuilder
-        protected virtual ISelectSqlBuilder ConvertToSelectSqlBuilder(SelectExpression selectExpression)
+        protected virtual IEnumerable<IPropertyMap> GetSelectProperties(IEntityMapper mapper, SelectExpression selectExpression)
         {
+            if (mapper == null)
+                throw new ArgumentNullException(nameof(mapper));
+
+            //Todo: future get select column from SelectExpression
+            return mapper.Properties.Where(SelectPropertyPredicate);
+        }
+
+        #region Convert SelectSqlBuilder
+        protected virtual ISelectSqlBuilder ConvertToSelectSqlBuilder(IEntityMapper mapper, SelectExpression selectExpression)
+        {
+            if (mapper == null)
+                throw new ArgumentNullException(nameof(mapper));
+
             if (selectExpression == null)
                 throw new ArgumentNullException(nameof(selectExpression));
 
             var sqlBuilder = SelectSqlBuilderFactory.Create();
-
-            var mapper = MapperProvider.GetEntityMapper(selectExpression.EntityType);
-            var selectProperties = mapper.Properties.Where(SelectPropertyPredicate);
+            
+            var selectProperties = GetSelectProperties(mapper, selectExpression);
             var whereSentence = ExprSqlResolver.Resolve(selectExpression.Predicate);
             var orderByStr = string.Join(",", selectExpression.Orderings.Select(ordering => FormatOrderByColumnStr(mapper, ordering)));
 
@@ -141,14 +161,14 @@ namespace HEF.Data.Query
             if (orderingExpression == null)
                 throw new ArgumentNullException(nameof(orderingExpression));
 
-            var orderByProperty = GetSelectProperties(mapper, orderingExpression.Expression).SingleOrDefault();
+            var orderByProperty = GetSelectPropertiesByExpression(mapper, orderingExpression.Expression).SingleOrDefault();
             if (orderByProperty == null)
                 throw new ArgumentException($"not found orderby property", nameof(orderingExpression));
 
             return $"{SqlFormatter.ColumnName(orderByProperty)} {(orderingExpression.IsAscending ? "asc" : "desc")}";
         }
 
-        protected virtual IEnumerable<IPropertyMap> GetSelectProperties(IEntityMapper mapper,
+        protected virtual IEnumerable<IPropertyMap> GetSelectPropertiesByExpression(IEntityMapper mapper,
             params LambdaExpression[] propertyExpressions)
         {
             if (mapper == null)
@@ -163,13 +183,18 @@ namespace HEF.Data.Query
         }
         #endregion
 
-        protected virtual LambdaExpression BuildQueryElementFactory(Type elementType)
+        protected virtual LambdaExpression BuildQueryElementFactory(Type elementType,
+            params IPropertyMap[] selectProperties)
         {
             var dataReaderParameter = Expression.Parameter(typeof(DbDataReader), "dataReader");
+            var propertyIndexMapParameter = Expression.Parameter(typeof(IDictionary<string, int>), "propertyIndexMap");
+            
             var elementInstance = Expression.New(elementType);
 
-            var delegateType = typeof(Func<,>).MakeGenericType(typeof(DbDataReader), elementType);
-            return Expression.Lambda(delegateType, elementInstance, dataReaderParameter);
+            var delegateType = Expression.GetFuncType(typeof(DbDataReader),
+                typeof(IDictionary<string, int>), elementType);
+            return Expression.Lambda(delegateType, elementInstance, dataReaderParameter, propertyIndexMapParameter);
         }
+        #endregion
     }
 }
