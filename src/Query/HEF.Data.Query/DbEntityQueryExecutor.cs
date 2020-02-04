@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 
 namespace HEF.Data.Query
@@ -20,7 +21,8 @@ namespace HEF.Data.Query
             ISelectSqlBuilderFactory selectSqlBuilderFactory,
             IEntityMapperProvider mapperProvider,
             IEntitySqlFormatter sqlFormatter,
-            IExpressionSqlResolver exprSqlResolver)
+            IExpressionSqlResolver exprSqlResolver,
+            IConcurrencyDetector concurrencyDetector)
         {
             if (expressionVisitorFactory == null)
                 throw new ArgumentNullException(nameof(expressionVisitorFactory));
@@ -33,6 +35,7 @@ namespace HEF.Data.Query
             MapperProvider = mapperProvider ?? throw new ArgumentNullException(nameof(mapperProvider));
             SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
             ExprSqlResolver = exprSqlResolver ?? throw new ArgumentNullException(nameof(exprSqlResolver));
+            ConcurrencyDetector = concurrencyDetector ?? throw new ArgumentNullException(nameof(concurrencyDetector));
         }
 
         #region Injected Properties
@@ -47,6 +50,8 @@ namespace HEF.Data.Query
         protected IEntitySqlFormatter SqlFormatter { get; }
 
         protected IExpressionSqlResolver ExprSqlResolver { get; }
+
+        protected IConcurrencyDetector ConcurrencyDetector { get; }
         #endregion
 
         public TResult Execute<TResult>(Expression query)
@@ -65,7 +70,8 @@ namespace HEF.Data.Query
                 Expression.Constant(CommandBuilder),
                 Expression.Constant(sqlSentence),
                 Expression.Constant(selectProperties, typeof(IReadOnlyList<IPropertyMap>)),
-                Expression.Constant(elementFactoryExpr.Compile()));
+                Expression.Constant(elementFactoryExpr.Compile()),
+                Expression.Constant(ConcurrencyDetector));
 
             var queryExecutorExpr = Expression.Lambda<Func<TResult>>(queryingEnumerableExpr);
 
@@ -88,7 +94,8 @@ namespace HEF.Data.Query
                 Expression.Constant(CommandBuilder),
                 Expression.Constant(sqlSentence),
                 Expression.Constant(selectProperties, typeof(IReadOnlyList<IPropertyMap>)),
-                Expression.Constant(elementFactoryExpr.Compile()));
+                Expression.Constant(elementFactoryExpr.Compile()),
+                Expression.Constant(ConcurrencyDetector));
 
             var queryExecutorExpr = Expression.Lambda<Func<TResult>>(queryingEnumerableExpr);
 
@@ -130,7 +137,8 @@ namespace HEF.Data.Query
             
             var selectProperties = GetSelectProperties(mapper, selectExpression);
             var whereSentence = ExprSqlResolver.Resolve(selectExpression.Predicate);
-            var orderByStr = string.Join(",", selectExpression.Orderings.Select(ordering => FormatOrderByColumnStr(mapper, ordering)));
+            var orderByStr = string.Join(",", selectExpression.Orderings.Select(ordering
+                => FormatOrderByColumnStr(selectProperties, ordering)));
 
             sqlBuilder.Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p, true))))
                 .From(SqlFormatter.TableName(mapper))
@@ -151,50 +159,102 @@ namespace HEF.Data.Query
         }
 
         protected virtual bool SelectPropertyPredicate(IPropertyMap propertyMap)
-            => !propertyMap.Ignored;  //排除忽略的属性
+            => !propertyMap.Ignored && !propertyMap.IsReadOnly;  //排除只读忽略的属性
 
-        protected virtual string FormatOrderByColumnStr(IEntityMapper mapper, OrderingExpression orderingExpression)
+        protected virtual string FormatOrderByColumnStr(IEnumerable<IPropertyMap> sourceProperties, OrderingExpression orderingExpression)
         {
-            if (mapper == null)
-                throw new ArgumentNullException(nameof(mapper));
+            if (sourceProperties.IsEmpty())
+                throw new ArgumentNullException(nameof(sourceProperties));
 
             if (orderingExpression == null)
                 throw new ArgumentNullException(nameof(orderingExpression));
 
-            var orderByProperty = GetSelectPropertiesByExpression(mapper, orderingExpression.Expression).SingleOrDefault();
+            var orderByPropertyName = orderingExpression.Expression.ParsePropertyName() ?? string.Empty;
+            var orderByProperty = sourceProperties.SingleOrDefault(p => string.Compare(p.Name, orderByPropertyName) == 0);
             if (orderByProperty == null)
                 throw new ArgumentException($"not found orderby property", nameof(orderingExpression));
 
             return $"{SqlFormatter.ColumnName(orderByProperty)} {(orderingExpression.IsAscending ? "asc" : "desc")}";
         }
-
-        protected virtual IEnumerable<IPropertyMap> GetSelectPropertiesByExpression(IEntityMapper mapper,
-            params LambdaExpression[] propertyExpressions)
-        {
-            if (mapper == null)
-                throw new ArgumentNullException(nameof(mapper));
-
-            if (propertyExpressions.IsEmpty())
-                throw new ArgumentNullException(nameof(propertyExpressions));
-
-            var propertyNames = propertyExpressions.Select(m => m.ParsePropertyName()) ?? Array.Empty<string>();
-
-            return mapper.Properties.Where(SelectPropertyPredicate).Where(p => propertyNames.Contains(p.Name));
-        }
         #endregion
+
+        #region QueryElementFactory
+        private static readonly MethodInfo _dictGetValueMethod = typeof(IDictionary<string, int>).GetRuntimeMethod(
+            nameof(IDictionary<string, int>.TryGetValue), new[] { typeof(string), typeof(int).MakeByRefType() });
 
         protected virtual LambdaExpression BuildQueryElementFactory(Type elementType,
             params IPropertyMap[] selectProperties)
         {
             var dataReaderParameter = Expression.Parameter(typeof(DbDataReader), "dataReader");
             var propertyIndexMapParameter = Expression.Parameter(typeof(IDictionary<string, int>), "propertyIndexMap");
-            
-            var elementInstance = Expression.New(elementType);
 
-            var delegateType = Expression.GetFuncType(typeof(DbDataReader),
-                typeof(IDictionary<string, int>), elementType);
-            return Expression.Lambda(delegateType, elementInstance, dataReaderParameter, propertyIndexMapParameter);
+            // collect the body
+            var bodyExprs = new List<Expression>();
+
+            // var element = new ElementType();
+            var elementVariableExpr = Expression.Variable(elementType, "element");
+            var newElementExpr = Expression.New(elementType);
+            var assignElementVariableExpr = Expression.Assign(elementVariableExpr, newElementExpr);
+            bodyExprs.Add(assignElementVariableExpr);
+
+            // int propertyIndex = 0;
+            var propertyIndexVariableExpr = Expression.Variable(typeof(int), "propertyIndex");
+            var assignPropertyIndexExpr = Expression.Assign(propertyIndexVariableExpr, Expression.Constant(0, typeof(int)));
+            bodyExprs.Add(assignPropertyIndexExpr);
+
+            if (selectProperties.IsNotEmpty())
+            {
+                foreach (var selectProperty in selectProperties)
+                {
+                    // propertyIndexMap.TryGetValue(propertyName, out propertyIndex);
+                    var propertyNameExpr = Expression.Constant(selectProperty.Name);                    
+                    var getPropertyIndexExpr = Expression.Call(propertyIndexMapParameter, _dictGetValueMethod,
+                        propertyNameExpr, propertyIndexVariableExpr);
+                    bodyExprs.Add(getPropertyIndexExpr);
+
+                    // element.Property = dataReader.IsDBNull(propertyIndex) ? default(PropertyType) : dataReader.GetValue(propertyIndex);
+                    var propertyValueExpr = CreateGetPropertyValueExpression(dataReaderParameter,
+                        selectProperty, propertyIndexVariableExpr);
+                    var propertyExpr = Expression.Property(elementVariableExpr, selectProperty.PropertyInfo);
+                    var assignPropertyExpr = Expression.Assign(propertyExpr, propertyValueExpr);
+                    bodyExprs.Add(assignPropertyExpr);
+                }
+            }
+
+            // code: return (ElementType)element;
+            var castResultExpr = Expression.Convert(elementVariableExpr, elementType);
+            bodyExprs.Add(castResultExpr);
+
+            // code: { ... }
+            var factoryBodyExpr = Expression.Block(
+                elementType, /* return type */
+                new[] { elementVariableExpr, propertyIndexVariableExpr } /* local variables */,
+                bodyExprs /* body expressions */);
+
+            var delegateType = Expression.GetFuncType(typeof(DbDataReader), typeof(IDictionary<string, int>), elementType);
+            return Expression.Lambda(delegateType, factoryBodyExpr, dataReaderParameter, propertyIndexMapParameter);
         }
+
+        protected virtual Expression CreateGetPropertyValueExpression(ParameterExpression dataReaderParameter,
+            IPropertyMap selectProperty, Expression propertyIndexExpr)
+        {
+            // dataReader.IsDBNull(propertyIndex) ? default(PropertyType) : dataReader.GetValue(propertyIndex);
+            var propertyType = selectProperty.PropertyInfo.PropertyType;
+            var getPropertyValueMethod = DataReaderMethods.GetDataReaderGetValueMethod(propertyType);
+            Expression propertyValueExpr = Expression.Call(dataReaderParameter, getPropertyValueMethod, propertyIndexExpr);
+            
+            if (propertyType.IsNullableType())
+            {
+                propertyValueExpr = Expression.Condition(
+                    Expression.Call(dataReaderParameter, DataReaderMethods.IsDbNullMethod, propertyIndexExpr),
+                    Expression.Default(propertyType),
+                    propertyValueExpr);
+            }
+
+            return propertyValueExpr;
+        }
+        #endregion
+
         #endregion
     }
 }

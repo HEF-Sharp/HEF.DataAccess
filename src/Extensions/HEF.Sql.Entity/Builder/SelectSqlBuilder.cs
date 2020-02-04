@@ -134,7 +134,7 @@ namespace HEF.Sql.Entity
         private IEnumerable<IPropertyMap> GetSelectProperties(bool isExclude,
             params Expression<Func<TEntity, object>>[] propertyExpressions)
         {
-            Func<IPropertyMap, bool> selectPredicate = p => !p.Ignored;  //排除忽略的属性
+            Func<IPropertyMap, bool> selectPredicate = p => !p.Ignored && !p.IsReadOnly;  //排除只读忽略的属性
 
             return Mapper.GetProperties(selectPredicate, isExclude, propertyExpressions);
         }

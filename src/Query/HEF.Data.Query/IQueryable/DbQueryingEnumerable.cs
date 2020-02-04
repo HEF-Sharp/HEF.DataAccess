@@ -17,16 +17,19 @@ namespace HEF.Data.Query
         private readonly SqlSentence _querySql;
         private readonly IReadOnlyList<IPropertyMap> _selectProperties;
         private readonly Func<DbDataReader, IDictionary<string, int>, T> _elementFactory;
+        private readonly IConcurrencyDetector _concurrencyDetector;
 
         public DbQueryingEnumerable(IDbCommandBuilder commandBuilder,
             SqlSentence querySql,
             IReadOnlyList<IPropertyMap> selectProperties,
-            Func<DbDataReader, IDictionary<string, int>, T> elementFactory)
+            Func<DbDataReader, IDictionary<string, int>, T> elementFactory,
+            IConcurrencyDetector concurrencyDetector)
         {
             _commandBuilder = commandBuilder ?? throw new ArgumentNullException(nameof(commandBuilder));
             _querySql = querySql ?? throw new ArgumentNullException(nameof(querySql));
             _selectProperties = selectProperties ?? throw new ArgumentNullException(nameof(selectProperties));
             _elementFactory = elementFactory ?? throw new ArgumentNullException(nameof(elementFactory));
+            _concurrencyDetector = concurrencyDetector ?? throw new ArgumentNullException(nameof(concurrencyDetector));
         }
 
         public virtual IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
@@ -67,6 +70,7 @@ namespace HEF.Data.Query
             private readonly SqlSentence _querySql;
             private readonly IReadOnlyList<IPropertyMap> _selectProperties;
             private readonly Func<DbDataReader, IDictionary<string, int>, T> _elementFactory;
+            private readonly IConcurrencyDetector _concurrencyDetector;
 
             private DbDataReader _dataReader;
             private IDictionary<string, int> _propertyIndexMap;
@@ -77,6 +81,7 @@ namespace HEF.Data.Query
                 _querySql = queryingEnumerable._querySql;
                 _selectProperties = queryingEnumerable._selectProperties;
                 _elementFactory = queryingEnumerable._elementFactory;
+                _concurrencyDetector = queryingEnumerable._concurrencyDetector;
             }
 
             public T Current { get; private set; }
@@ -85,18 +90,21 @@ namespace HEF.Data.Query
 
             public bool MoveNext()
             {
-                if (_dataReader == null)
-                    InitializeReader();
-
-                var hasNext = _dataReader.Read();
-                Current = default;
-
-                if (hasNext)
+                using (_concurrencyDetector.EnterCriticalSection())
                 {
-                    Current = _elementFactory(_dataReader, _propertyIndexMap);
-                }
+                    if (_dataReader == null)
+                        InitializeReader();
 
-                return hasNext;
+                    var hasNext = _dataReader.Read();
+                    Current = default;
+
+                    if (hasNext)
+                    {
+                        Current = _elementFactory(_dataReader, _propertyIndexMap);
+                    }
+
+                    return hasNext;
+                }
             }
 
             private void InitializeReader()
@@ -127,6 +135,7 @@ namespace HEF.Data.Query
             private readonly SqlSentence _querySql;
             private readonly IReadOnlyList<IPropertyMap> _selectProperties;
             private readonly Func<DbDataReader, IDictionary<string, int>, T> _elementFactory;
+            private readonly IConcurrencyDetector _concurrencyDetector;
 
             private readonly CancellationToken _cancellationToken;
 
@@ -141,6 +150,7 @@ namespace HEF.Data.Query
                 _querySql = queryingEnumerable._querySql;
                 _selectProperties = queryingEnumerable._selectProperties;
                 _elementFactory = queryingEnumerable._elementFactory;
+                _concurrencyDetector = queryingEnumerable._concurrencyDetector;
 
                 _cancellationToken = cancellationToken;
             }
@@ -149,18 +159,21 @@ namespace HEF.Data.Query
 
             public async ValueTask<bool> MoveNextAsync()
             {
-                if (_dataReader == null)
-                   await InitializeReaderAsync(_cancellationToken);
-
-                var hasNext = await _dataReader.ReadAsync(_cancellationToken);
-                Current = default;
-
-                if (hasNext)
+                using (_concurrencyDetector.EnterCriticalSection())
                 {
-                    Current = _elementFactory(_dataReader, _propertyIndexMap);
-                }
+                    if (_dataReader == null)
+                        await InitializeReaderAsync(_cancellationToken);
 
-                return hasNext;
+                    var hasNext = await _dataReader.ReadAsync(_cancellationToken);
+                    Current = default;
+
+                    if (hasNext)
+                    {
+                        Current = _elementFactory(_dataReader, _propertyIndexMap);
+                    }
+
+                    return hasNext;
+                }
             }
 
             private async Task InitializeReaderAsync(CancellationToken cancellationToken)
