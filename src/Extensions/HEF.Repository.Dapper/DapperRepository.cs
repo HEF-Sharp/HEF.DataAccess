@@ -1,19 +1,50 @@
-﻿using System;
+﻿using Dapper;
+using HEF.Data;
+using HEF.Sql;
+using HEF.Sql.Entity;
+using HEF.Util;
+using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using HEF.Data;
-using Dapper;
 
 namespace HEF.Repository.Dapper
 {
     public class DapperRepository<TEntity> : IDapperRepository<TEntity> where TEntity : class
     {
-        public DapperRepository(IDbConnectionContext connectionContext)
+        public DapperRepository(IDbConnectionContext connectionContext,
+            ISelectEntitySqlBuilderFactory selectSqlBuilderFactory,
+            IEntityPredicateFactory entityPredicateFactory)
         {
             ConnectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
+
+            SelectSqlBuilderFactory = selectSqlBuilderFactory ?? throw new ArgumentNullException(nameof(selectSqlBuilderFactory));
+            EntityPredicateFactory = entityPredicateFactory ?? throw new ArgumentNullException(nameof(entityPredicateFactory));
         }
 
+        #region Injected Properties
         public IDbConnectionContext ConnectionContext { get; }
+
+        protected ISelectEntitySqlBuilderFactory SelectSqlBuilderFactory { get; }
+
+        protected IEntityPredicateFactory EntityPredicateFactory { get; }
+        #endregion
+
+        #region Helper Functions
+        protected static DynamicParameters ConvertToDynamicParameters(params SqlParameter[] sqlParameters)
+        {
+            var dynamicParams = new DynamicParameters();
+
+            if (sqlParameters.IsNotEmpty())
+            {
+                foreach(var sqlParam in sqlParameters)
+                {
+                    dynamicParams.Add(sqlParam.ParameterName, sqlParam.Value);
+                }
+            }
+
+            return dynamicParams;
+        }
+        #endregion
 
         #region Sync
 
@@ -25,7 +56,14 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public TEntity GetByKey(object id)
         {
-            return ConnectionContext.Connection.QuerySingle<TEntity>("", id, ConnectionContext.Transaction);
+            var keyPredicate = EntityPredicateFactory.GetKeyPredicate<TEntity>(id);
+            var selectSqlBuilder = SelectSqlBuilderFactory.Create<TEntity>()
+                .ColumnIgnore().Table().Where(keyPredicate);
+            var sqlSentence = selectSqlBuilder.Build();
+
+            return ConnectionContext.Connection.QuerySingle<TEntity>(
+                sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
+                ConnectionContext.Transaction);
         }
         #endregion
 

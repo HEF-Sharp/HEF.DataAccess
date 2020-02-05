@@ -1,5 +1,6 @@
 ﻿using DataAccess.TestCommon;
 using HEF.Data.MySql;
+using HEF.Sql;
 
 namespace HEF.Data.Query.Test
 {
@@ -12,14 +13,14 @@ namespace HEF.Data.Query.Test
 
         public static IDbConnectionContext ConnectionContext = new DbConnectionContext(ConnectionProvider);
 
-        public static IDbCommandBuilder CommandBuilder = new DbCommandBuilder(ConnectionContext);
+        public static IDbCommandBuilderFactory CommandBuilderFactory = new DbCommandBuilderFactory(ConnectionContext);
 
         public static ISelectSqlBuilderFactory SelectSqlBuilderFactory = new SelectSqlBuilderFactory();
 
         public static IConcurrencyDetector ConcurrencyDetector = new ConcurrencyDetector();
 
         public static IDbEntityQueryExecutor EntityQueryExecutor = new DbEntityQueryExecutor(QueryableExprVistiorFactory,
-            CommandBuilder, SelectSqlBuilderFactory,
+            CommandBuilderFactory, SelectSqlBuilderFactory,
             TestStatic.MapperProvider, TestStatic.MySqlFormatter, TestStatic.ExprMySqlResolver, ConcurrencyDetector);
 
         public static IAsyncQueryProvider AsyncQueryProvider = new DbEntityQueryProvider(EntityQueryExecutor);

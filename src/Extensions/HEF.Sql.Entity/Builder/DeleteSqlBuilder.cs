@@ -53,5 +53,7 @@ namespace HEF.Sql.Entity
 
             return this;
         }
+
+        public SqlSentence Build() => SqlBuilder.Build();
     }
 }

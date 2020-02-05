@@ -125,6 +125,8 @@ namespace HEF.Sql.Entity
             return this;
         }
 
+        public SqlSentence Build() => SqlBuilder.Build();
+
         /// <summary>
         /// 获取Select属性
         /// </summary>

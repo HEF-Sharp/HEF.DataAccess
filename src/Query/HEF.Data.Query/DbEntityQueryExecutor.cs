@@ -17,31 +17,28 @@ namespace HEF.Data.Query
     public class DbEntityQueryExecutor : IDbEntityQueryExecutor
     {
         public DbEntityQueryExecutor(IQueryableExpressionVisitorFactory expressionVisitorFactory,
-            IDbCommandBuilder dbCommandBuilder,
+            IDbCommandBuilderFactory dbCommandBuilderFactory,
             ISelectSqlBuilderFactory selectSqlBuilderFactory,
             IEntityMapperProvider mapperProvider,
             IEntitySqlFormatter sqlFormatter,
             IExpressionSqlResolver exprSqlResolver,
             IConcurrencyDetector concurrencyDetector)
         {
-            if (expressionVisitorFactory == null)
-                throw new ArgumentNullException(nameof(expressionVisitorFactory));
-
-            ExpressionVisitor = expressionVisitorFactory.Create();
-
-            CommandBuilder = dbCommandBuilder ?? throw new ArgumentNullException(nameof(dbCommandBuilder));
-
+            ExpressionVisitorFactory = expressionVisitorFactory ?? throw new ArgumentNullException(nameof(expressionVisitorFactory));
+            CommandBuilderFactory = dbCommandBuilderFactory ?? throw new ArgumentNullException(nameof(dbCommandBuilderFactory));
             SelectSqlBuilderFactory = selectSqlBuilderFactory ?? throw new ArgumentNullException(nameof(selectSqlBuilderFactory));
+
             MapperProvider = mapperProvider ?? throw new ArgumentNullException(nameof(mapperProvider));
             SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
             ExprSqlResolver = exprSqlResolver ?? throw new ArgumentNullException(nameof(exprSqlResolver));
+
             ConcurrencyDetector = concurrencyDetector ?? throw new ArgumentNullException(nameof(concurrencyDetector));
         }
 
         #region Injected Properties
-        protected QueryableExpressionVisitor ExpressionVisitor { get; }
+        protected IQueryableExpressionVisitorFactory ExpressionVisitorFactory { get; }
 
-        protected IDbCommandBuilder CommandBuilder { get; }
+        protected IDbCommandBuilderFactory CommandBuilderFactory { get; }
 
         protected ISelectSqlBuilderFactory SelectSqlBuilderFactory { get; }
 
@@ -67,7 +64,7 @@ namespace HEF.Data.Query
 
             var queryingEnumerableExpr = Expression.New(
                 typeof(DbQueryingEnumerable<>).MakeGenericType(selectExpr.EntityType).GetConstructors()[0],
-                Expression.Constant(CommandBuilder),
+                Expression.Constant(CommandBuilderFactory.Create()),
                 Expression.Constant(sqlSentence),
                 Expression.Constant(selectProperties, typeof(IReadOnlyList<IPropertyMap>)),
                 Expression.Constant(elementFactoryExpr.Compile()),
@@ -91,7 +88,7 @@ namespace HEF.Data.Query
 
             var queryingEnumerableExpr = Expression.New(
                 typeof(DbQueryingEnumerable<>).MakeGenericType(selectExpr.EntityType).GetConstructors()[0],
-                Expression.Constant(CommandBuilder),
+                Expression.Constant(CommandBuilderFactory.Create()),
                 Expression.Constant(sqlSentence),
                 Expression.Constant(selectProperties, typeof(IReadOnlyList<IPropertyMap>)),
                 Expression.Constant(elementFactoryExpr.Compile()),
@@ -105,7 +102,8 @@ namespace HEF.Data.Query
         #region Helper Functions
         protected virtual SelectExpression GetQuerySelectExpression(Expression query)
         {
-            var queryExpr = ExpressionVisitor.Visit(query);
+            var expressionVisitor = ExpressionVisitorFactory.Create();
+            var queryExpr = expressionVisitor.Visit(query);
 
             if (queryExpr is EntityQueryExpression entityQueryExpr)
             {
@@ -143,9 +141,13 @@ namespace HEF.Data.Query
             sqlBuilder.Select(string.Join(",", selectProperties.Select(p => SqlFormatter.ColumnName(p, true))))
                 .From(SqlFormatter.TableName(mapper))
                 .Where(whereSentence.SqlText)
-                .OrderBy(orderByStr)
-                .Limit(selectExpression.Limit.Value.ParseInt())
-                .Offset(selectExpression.Offset.Value.ParseInt());
+                .OrderBy(orderByStr);
+
+            if (selectExpression.Limit != null)
+                sqlBuilder.Limit(selectExpression.Limit.Value.ParseInt());
+
+            if (selectExpression.Offset != null)
+                sqlBuilder.Offset(selectExpression.Offset.Value.ParseInt());
 
             if (whereSentence.Parameters.IsNotEmpty())
             {

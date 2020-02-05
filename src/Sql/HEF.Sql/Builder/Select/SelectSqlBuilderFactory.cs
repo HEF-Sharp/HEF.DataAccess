@@ -1,6 +1,4 @@
-﻿using HEF.Sql;
-
-namespace HEF.Data.Query
+﻿namespace HEF.Sql
 {
     public class SelectSqlBuilderFactory : ISelectSqlBuilderFactory
     {

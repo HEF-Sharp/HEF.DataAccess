@@ -83,6 +83,8 @@ namespace HEF.Sql.Entity
             return this;
         }
 
+        public SqlSentence Build() => SqlBuilder.Build();
+
         /// <summary>
         /// 获取Update属性
         /// </summary>
