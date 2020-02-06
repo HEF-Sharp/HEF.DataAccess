@@ -17,12 +17,11 @@ namespace HEF.Repository
         #region 插入
         /// <summary>
         /// 插入实体
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
+        /// </summary>        
         /// <param name="entity"></param>
         /// <param name="ignorePropertyExpressions">忽略的属性表达式</param>
         /// <returns></returns>
-        TKey Insert<TKey>(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions);
+        int Insert(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions);
         #endregion
 
         #region 更新

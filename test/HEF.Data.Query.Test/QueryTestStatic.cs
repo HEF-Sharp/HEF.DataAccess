@@ -15,12 +15,12 @@ namespace HEF.Data.Query.Test
 
         public static IDbCommandBuilderFactory CommandBuilderFactory = new DbCommandBuilderFactory(ConnectionContext);
 
-        public static ISelectSqlBuilderFactory SelectSqlBuilderFactory = new SelectSqlBuilderFactory();
+        public static ISqlBuilderFactory SqlBuilderFactory = new SqlBuilderFactory();
 
         public static IConcurrencyDetector ConcurrencyDetector = new ConcurrencyDetector();
 
         public static IDbEntityQueryExecutor EntityQueryExecutor = new DbEntityQueryExecutor(QueryableExprVistiorFactory,
-            CommandBuilderFactory, SelectSqlBuilderFactory,
+            CommandBuilderFactory, SqlBuilderFactory,
             TestStatic.MapperProvider, TestStatic.MySqlFormatter, TestStatic.ExprMySqlResolver, ConcurrencyDetector);
 
         public static IAsyncQueryProvider AsyncQueryProvider = new DbEntityQueryProvider(EntityQueryExecutor);

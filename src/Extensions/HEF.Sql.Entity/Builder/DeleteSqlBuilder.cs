@@ -7,7 +7,8 @@ using System.Linq.Expressions;
 
 namespace HEF.Sql.Entity
 {
-    public class DeleteSqlBuilder<TEntity> where TEntity : class
+    public class DeleteSqlBuilder<TEntity> : ISqlBuilder
+        where TEntity : class
     {
         public DeleteSqlBuilder(IDeleteSqlBuilder deleteSqlBuilder,
             IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter,

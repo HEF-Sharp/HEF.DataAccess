@@ -9,7 +9,8 @@ using System.Linq.Expressions;
 
 namespace HEF.Sql.Entity
 {
-    public class SelectSqlBuilder<TEntity> where TEntity : class
+    public class SelectSqlBuilder<TEntity> : ISqlBuilder
+        where TEntity : class
     {
         public SelectSqlBuilder(ISelectSqlBuilder selectSqlBuilder,
             IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter,

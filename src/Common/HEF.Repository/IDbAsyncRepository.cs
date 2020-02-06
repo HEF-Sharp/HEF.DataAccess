@@ -18,12 +18,11 @@ namespace HEF.Repository
         #region 插入
         /// <summary>
         /// 插入实体
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
+        /// </summary>        
         /// <param name="entity"></param>
         /// <param name="ignorePropertyExpressions">忽略的属性表达式</param>
         /// <returns></returns>
-        Task<TKey> InsertAsync<TKey>(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions);
+        Task<int> InsertAsync(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions);
         #endregion
 
         #region 更新

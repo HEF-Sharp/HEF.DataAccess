@@ -8,7 +8,8 @@ using System.Linq.Expressions;
 
 namespace HEF.Sql.Entity
 {
-    public class InsertSqlBuilder<TEntity> where TEntity : class
+    public class InsertSqlBuilder<TEntity> : ISqlBuilder
+        where TEntity : class
     {
         public InsertSqlBuilder(IInsertSqlBuilder insertSqlBuilder,
             IEntityMapperProvider mapperProvider, IEntitySqlFormatter sqlFormatter)

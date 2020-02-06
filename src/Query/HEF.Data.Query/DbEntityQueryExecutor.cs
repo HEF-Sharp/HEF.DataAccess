@@ -18,7 +18,7 @@ namespace HEF.Data.Query
     {
         public DbEntityQueryExecutor(IQueryableExpressionVisitorFactory expressionVisitorFactory,
             IDbCommandBuilderFactory dbCommandBuilderFactory,
-            ISelectSqlBuilderFactory selectSqlBuilderFactory,
+            ISqlBuilderFactory sqlBuilderFactory,
             IEntityMapperProvider mapperProvider,
             IEntitySqlFormatter sqlFormatter,
             IExpressionSqlResolver exprSqlResolver,
@@ -26,7 +26,7 @@ namespace HEF.Data.Query
         {
             ExpressionVisitorFactory = expressionVisitorFactory ?? throw new ArgumentNullException(nameof(expressionVisitorFactory));
             CommandBuilderFactory = dbCommandBuilderFactory ?? throw new ArgumentNullException(nameof(dbCommandBuilderFactory));
-            SelectSqlBuilderFactory = selectSqlBuilderFactory ?? throw new ArgumentNullException(nameof(selectSqlBuilderFactory));
+            SqlBuilderFactory = sqlBuilderFactory ?? throw new ArgumentNullException(nameof(sqlBuilderFactory));
 
             MapperProvider = mapperProvider ?? throw new ArgumentNullException(nameof(mapperProvider));
             SqlFormatter = sqlFormatter ?? throw new ArgumentNullException(nameof(sqlFormatter));
@@ -40,7 +40,7 @@ namespace HEF.Data.Query
 
         protected IDbCommandBuilderFactory CommandBuilderFactory { get; }
 
-        protected ISelectSqlBuilderFactory SelectSqlBuilderFactory { get; }
+        protected ISqlBuilderFactory SqlBuilderFactory { get; }
 
         protected IEntityMapperProvider MapperProvider { get; }
 
@@ -131,7 +131,7 @@ namespace HEF.Data.Query
             if (selectExpression == null)
                 throw new ArgumentNullException(nameof(selectExpression));
 
-            var sqlBuilder = SelectSqlBuilderFactory.Create();
+            var sqlBuilder = SqlBuilderFactory.Select();
             
             var selectProperties = GetSelectProperties(mapper, selectExpression);
             var whereSentence = ExprSqlResolver.Resolve(selectExpression.Predicate);

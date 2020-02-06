@@ -8,9 +8,9 @@ using System.Linq.Expressions;
 
 namespace HEF.Sql.Entity
 {
-    internal static class EntityMapperExtensions
+    public static class EntityMapperExtensions
     {
-        internal static IEnumerable<IPropertyMap> GetProperties<TEntity>(this IEntityMapper entityMapper,
+        public static IEnumerable<IPropertyMap> GetProperties<TEntity>(this IEntityMapper entityMapper,
             Func<IPropertyMap, bool> propertyPredicate,
             bool isExclude, params Expression<Func<TEntity, object>>[] propertyExpressions)
             where TEntity : class

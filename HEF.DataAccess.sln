@@ -43,6 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Query", "Query", "{4069978A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HEF.Data.Query", "src\Query\HEF.Data.Query\HEF.Data.Query.csproj", "{FAC96441-DA70-45B7-8997-F9F1EBF30720}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HEF.Repository.Dapper.Test", "test\HEF.Repository.Dapper.Test\HEF.Repository.Dapper.Test.csproj", "{A4A7A54B-34E5-4CF1-A46A-2FE3FEAC3AAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,10 @@ Global
 		{FAC96441-DA70-45B7-8997-F9F1EBF30720}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAC96441-DA70-45B7-8997-F9F1EBF30720}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAC96441-DA70-45B7-8997-F9F1EBF30720}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4A7A54B-34E5-4CF1-A46A-2FE3FEAC3AAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4A7A54B-34E5-4CF1-A46A-2FE3FEAC3AAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4A7A54B-34E5-4CF1-A46A-2FE3FEAC3AAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4A7A54B-34E5-4CF1-A46A-2FE3FEAC3AAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -124,6 +130,7 @@ Global
 		{61D36DEC-9887-42BE-A8E0-87D9E06FD6E8} = {B7604DB4-D15F-44AD-AD05-03CDF4BECC1A}
 		{47A2F1B3-0DE4-4F4F-BB19-E6CB4AB8CDB1} = {B7604DB4-D15F-44AD-AD05-03CDF4BECC1A}
 		{FAC96441-DA70-45B7-8997-F9F1EBF30720} = {4069978A-BE6A-4EE8-A14F-1CAFA092620F}
+		{A4A7A54B-34E5-4CF1-A46A-2FE3FEAC3AAF} = {B2E25360-0B31-4AF2-903A-CA601BFE2412}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {82FC58E7-FFFB-4968-A0BC-AB73B8C72ED2}

@@ -12,19 +12,19 @@ namespace HEF.Repository.Dapper
     public class DapperRepository<TEntity> : IDapperRepository<TEntity> where TEntity : class
     {
         public DapperRepository(IDbConnectionContext connectionContext,
-            ISelectEntitySqlBuilderFactory selectSqlBuilderFactory,
+            IEntitySqlBuilderFactory entitySqlBuilderFactory,
             IEntityPredicateFactory entityPredicateFactory)
         {
             ConnectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
 
-            SelectSqlBuilderFactory = selectSqlBuilderFactory ?? throw new ArgumentNullException(nameof(selectSqlBuilderFactory));
+            EntitySqlBuilderFactory = entitySqlBuilderFactory ?? throw new ArgumentNullException(nameof(entitySqlBuilderFactory));
             EntityPredicateFactory = entityPredicateFactory ?? throw new ArgumentNullException(nameof(entityPredicateFactory));
         }
 
         #region Injected Properties
         public IDbConnectionContext ConnectionContext { get; }
 
-        protected ISelectEntitySqlBuilderFactory SelectSqlBuilderFactory { get; }
+        protected IEntitySqlBuilderFactory EntitySqlBuilderFactory { get; }
 
         protected IEntityPredicateFactory EntityPredicateFactory { get; }
         #endregion
@@ -44,6 +44,107 @@ namespace HEF.Repository.Dapper
 
             return dynamicParams;
         }
+
+        protected int ExecuteSqlSentence(SqlSentence sqlSentence)
+        {
+            if (sqlSentence == null)
+                throw new ArgumentNullException(nameof(sqlSentence));
+
+            return ConnectionContext.Connection.Execute(
+                sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
+                ConnectionContext.Transaction);
+        }
+
+        protected Task<int> ExecuteSqlSentenceAsync(SqlSentence sqlSentence)
+        {
+            if (sqlSentence == null)
+                throw new ArgumentNullException(nameof(sqlSentence));
+
+            return ConnectionContext.Connection.ExecuteAsync(
+                sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
+                ConnectionContext.Transaction);
+        }
+        #endregion
+
+        #region Build SqlSentence
+        protected SqlSentence BuildSelectByKeySql(object id)
+        {
+            var keyPredicate = EntityPredicateFactory.GetKeyPredicate<TEntity>(id);
+            var selectSqlBuilder = EntitySqlBuilderFactory.Select<TEntity>()
+                .Table().ColumnIgnore().Where(keyPredicate);
+
+            return selectSqlBuilder.Build();
+        }
+
+        protected SqlSentence BuildInsertSql(TEntity entity,
+            params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
+        {
+            var insertSqlBuilder = EntitySqlBuilderFactory.Insert<TEntity>()
+                .Table()
+                .ColumnIgnore(entity, ignorePropertyExpressions);
+
+            return insertSqlBuilder.Build();
+        }
+
+        protected SqlSentence BuildUpdateSql(TEntity entity, bool isExclude,
+            params Expression<Func<TEntity, object>>[] propertyExpressions)
+        {
+            var keyPredicate = EntityPredicateFactory.GetKeyPredicate(entity);
+            var updateSqlBuilder = EntitySqlBuilderFactory.Update<TEntity>()
+                .Table()
+                .Where(keyPredicate);
+
+            updateSqlBuilder = isExclude ? updateSqlBuilder.ColumnIgnore(entity, propertyExpressions)
+                : updateSqlBuilder.Column(entity, propertyExpressions);
+
+            return updateSqlBuilder.Build();
+        }
+
+        protected SqlSentence BuildUpdateByKeySql(object id, TEntity entity, bool isExclude,
+            params Expression<Func<TEntity, object>>[] propertyExpressions)
+        {
+            var keyPredicate = EntityPredicateFactory.GetKeyPredicate<TEntity>(id);
+            var updateSqlBuilder = EntitySqlBuilderFactory.Update<TEntity>()
+                .Table()
+                .Where(keyPredicate);
+
+            updateSqlBuilder = isExclude ? updateSqlBuilder.ColumnIgnore(entity, propertyExpressions)
+                : updateSqlBuilder.Column(entity, propertyExpressions);
+
+            return updateSqlBuilder.Build();
+        }
+
+        protected SqlSentence BuildDeleteSql(TEntity entity)
+        {
+            var keyPredicate = EntityPredicateFactory.GetKeyPredicate(entity);
+            var deleteSqlBuilder = EntitySqlBuilderFactory.Delete<TEntity>()
+                .Table()
+                .Where(keyPredicate);
+
+            return deleteSqlBuilder.Build();
+        }
+
+        protected SqlSentence BuildDeleteByKeySql(object id)
+        {
+            var keyPredicate = EntityPredicateFactory.GetKeyPredicate<TEntity>(id);
+            var deleteSqlBuilder = EntitySqlBuilderFactory.Delete<TEntity>()
+                .Table()
+                .Where(keyPredicate);
+
+            return deleteSqlBuilder.Build();
+        }
+
+        protected SqlSentence BuildDeleteByWhereSql(TEntity entity,
+            params Expression<Func<TEntity, object>>[] wherePropertyExpressions)
+        {
+            var propertyPredicate = EntityPredicateFactory.GetPropertyPredicate(
+                entity, wherePropertyExpressions);
+            var deleteSqlBuilder = EntitySqlBuilderFactory.Delete<TEntity>()
+                .Table()
+                .Where(propertyPredicate);
+
+            return deleteSqlBuilder.Build();
+        }
         #endregion
 
         #region Sync
@@ -56,10 +157,7 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public TEntity GetByKey(object id)
         {
-            var keyPredicate = EntityPredicateFactory.GetKeyPredicate<TEntity>(id);
-            var selectSqlBuilder = SelectSqlBuilderFactory.Create<TEntity>()
-                .ColumnIgnore().Table().Where(keyPredicate);
-            var sqlSentence = selectSqlBuilder.Build();
+            var sqlSentence = BuildSelectByKeySql(id);
 
             return ConnectionContext.Connection.QuerySingle<TEntity>(
                 sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
@@ -70,14 +168,15 @@ namespace HEF.Repository.Dapper
         #region 插入
         /// <summary>
         /// 插入实体
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
+        /// </summary>        
         /// <param name="entity"></param>
         /// <param name="ignorePropertyExpressions">忽略的属性表达式</param>
         /// <returns></returns>
-        public TKey Insert<TKey>(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
+        public int Insert(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildInsertSql(entity, ignorePropertyExpressions);
+
+            return ExecuteSqlSentence(sqlSentence);
         }
         #endregion
 
@@ -90,7 +189,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int Update(TEntity entity, params Expression<Func<TEntity, object>>[] includePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildUpdateSql(entity, false, includePropertyExpressions);
+
+            return ExecuteSqlSentence(sqlSentence);
         }
 
         /// <summary>
@@ -101,7 +202,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int UpdateIgnore(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildUpdateSql(entity, true, ignorePropertyExpressions);
+
+            return ExecuteSqlSentence(sqlSentence);
         }
 
         /// <summary>
@@ -113,7 +216,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int UpdateByKey(object id, TEntity entity, params Expression<Func<TEntity, object>>[] includePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildUpdateByKeySql(id, entity, false, includePropertyExpressions);
+
+            return ExecuteSqlSentence(sqlSentence);
         }
 
         /// <summary>
@@ -125,7 +230,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int UpdateIgnoreByKey(object id, TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildUpdateByKeySql(id, entity, true, ignorePropertyExpressions);
+
+            return ExecuteSqlSentence(sqlSentence);
         }
         #endregion
 
@@ -137,7 +244,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int DeleteByKey(object id)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildDeleteByKeySql(id);
+
+            return ExecuteSqlSentence(sqlSentence);
         }
 
         /// <summary>
@@ -147,7 +256,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int Delete(TEntity entity)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildDeleteSql(entity);
+
+            return ExecuteSqlSentence(sqlSentence);
         }
 
         /// <summary>
@@ -158,7 +269,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int DeleteByWhere(TEntity entity, params Expression<Func<TEntity, object>>[] wherePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildDeleteByWhereSql(entity, wherePropertyExpressions);
+
+            return ExecuteSqlSentence(sqlSentence);
         }
         #endregion
 
@@ -174,21 +287,26 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<TEntity> GetByKeyAsync(object id)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildSelectByKeySql(id);
+
+            return ConnectionContext.Connection.QuerySingleAsync<TEntity>(
+                sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
+                ConnectionContext.Transaction);
         }
         #endregion
 
         #region 插入
         /// <summary>
         /// 插入实体
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
+        /// </summary>        
         /// <param name="entity"></param>
         /// <param name="ignorePropertyExpressions">忽略的属性表达式</param>
         /// <returns></returns>
-        public Task<TKey> InsertAsync<TKey>(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
+        public Task<int> InsertAsync(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildInsertSql(entity, ignorePropertyExpressions);
+
+            return ExecuteSqlSentenceAsync(sqlSentence);
         }
         #endregion
 
@@ -201,7 +319,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> UpdateAsync(TEntity entity, params Expression<Func<TEntity, object>>[] includePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildUpdateSql(entity, false, includePropertyExpressions);
+
+            return ExecuteSqlSentenceAsync(sqlSentence);
         }
 
         /// <summary>
@@ -212,7 +332,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> UpdateIgnoreAsync(TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildUpdateSql(entity, true, ignorePropertyExpressions);
+
+            return ExecuteSqlSentenceAsync(sqlSentence);
         }
 
         /// <summary>
@@ -224,7 +346,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> UpdateByKeyAsync(object id, TEntity entity, params Expression<Func<TEntity, object>>[] includePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildUpdateByKeySql(id, entity, false, includePropertyExpressions);
+
+            return ExecuteSqlSentenceAsync(sqlSentence);
         }
 
         /// <summary>
@@ -236,7 +360,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> UpdateIgnoreByKeyAsync(object id, TEntity entity, params Expression<Func<TEntity, object>>[] ignorePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildUpdateByKeySql(id, entity, true, ignorePropertyExpressions);
+
+            return ExecuteSqlSentenceAsync(sqlSentence);
         }
         #endregion
 
@@ -248,7 +374,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> DeleteByKeyAsync(object id)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildDeleteByKeySql(id);
+
+            return ExecuteSqlSentenceAsync(sqlSentence);
         }
 
         /// <summary>
@@ -258,7 +386,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> DeleteAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildDeleteSql(entity);
+
+            return ExecuteSqlSentenceAsync(sqlSentence);
         }
 
         /// <summary>
@@ -269,7 +399,9 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> DeleteByWhereAsync(TEntity entity, params Expression<Func<TEntity, object>>[] wherePropertyExpressions)
         {
-            throw new NotImplementedException();
+            var sqlSentence = BuildDeleteByWhereSql(entity, wherePropertyExpressions);
+
+            return ExecuteSqlSentenceAsync(sqlSentence);
         }
         #endregion
 
