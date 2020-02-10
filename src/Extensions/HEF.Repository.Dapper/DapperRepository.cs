@@ -16,6 +16,7 @@ namespace HEF.Repository.Dapper
             IEntityPredicateFactory entityPredicateFactory)
         {
             ConnectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
+            AsyncConnectionContext = ConnectionContext.AsAsync();
 
             EntitySqlBuilderFactory = entitySqlBuilderFactory ?? throw new ArgumentNullException(nameof(entitySqlBuilderFactory));
             EntityPredicateFactory = entityPredicateFactory ?? throw new ArgumentNullException(nameof(entityPredicateFactory));
@@ -23,6 +24,8 @@ namespace HEF.Repository.Dapper
 
         #region Injected Properties
         public IDbConnectionContext ConnectionContext { get; }
+
+        public IDbAsyncConnectionContext AsyncConnectionContext { get; }
 
         protected IEntitySqlBuilderFactory EntitySqlBuilderFactory { get; }
 
@@ -60,9 +63,9 @@ namespace HEF.Repository.Dapper
             if (sqlSentence == null)
                 throw new ArgumentNullException(nameof(sqlSentence));
 
-            return ConnectionContext.Connection.ExecuteAsync(
+            return AsyncConnectionContext.Connection.ExecuteAsync(
                 sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
-                ConnectionContext.Transaction);
+                AsyncConnectionContext.Transaction);
         }
         #endregion
 
@@ -289,9 +292,9 @@ namespace HEF.Repository.Dapper
         {
             var sqlSentence = BuildSelectByKeySql(id);
 
-            return ConnectionContext.Connection.QuerySingleAsync<TEntity>(
+            return AsyncConnectionContext.Connection.QuerySingleAsync<TEntity>(
                 sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
-                ConnectionContext.Transaction);
+                AsyncConnectionContext.Transaction);
         }
         #endregion
 

@@ -17,9 +17,20 @@ namespace HEF.Data
         
         public IDbTransaction Transaction { get; private set; }
 
-        #region Transaction
-        public IDbConnectionContext UseTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        public void EnsureConnectionOpen()
         {
+            if (Connection.State == ConnectionState.Closed)
+            {
+                Connection.Open();
+            }
+        }
+
+        #region Transaction
+        public IDbConnectionContext UseTransaction(IsolationLevel isolationLevel)
+        {
+            if (Transaction != null)
+                throw new InvalidOperationException("connection has already begin transaction");
+
             EnsureConnectionOpen();
             Transaction = Connection.BeginTransaction(isolationLevel);
 
@@ -38,14 +49,6 @@ namespace HEF.Data
             TransactionAction(() => Transaction.Rollback());
 
             return this;
-        }
-
-        private void EnsureConnectionOpen()
-        {
-            if (Connection.State == ConnectionState.Closed)
-            {
-                Connection.Open();
-            }
         }
 
         private void TransactionAction(Action action)

@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HEF.Data\HEF.Data.csproj" />
+    <ProjectReference Include="..\..\Common\HEF.Repository\HEF.Repository.csproj" />
   </ItemGroup>
 
 </Project>

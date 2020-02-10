@@ -4,7 +4,6 @@ using HEF.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading;
@@ -114,8 +113,7 @@ namespace HEF.Data.Query
                     .AddParameters(_querySql.Parameters)
                     .Build();
 
-                if (command.Connection.State != ConnectionState.Open)
-                    command.Connection.Open();
+                _commandBuilder.ConnectionContext.EnsureConnectionOpen();
 
                 _dataReader = command.ExecuteReader() as DbDataReader;
 
@@ -184,8 +182,7 @@ namespace HEF.Data.Query
                     .AddParameters(_querySql.Parameters)
                     .Build() as DbCommand;
 
-                if (command.Connection.State != ConnectionState.Open)
-                    await command.Connection.OpenAsync(cancellationToken);
+                await _commandBuilder.ConnectionContext.AsAsync().EnsureConnectionOpenAsync(cancellationToken);
 
                 _dataReader = await command.ExecuteReaderAsync(cancellationToken);
 

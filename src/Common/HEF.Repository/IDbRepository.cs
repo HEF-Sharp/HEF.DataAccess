@@ -1,10 +1,13 @@
-﻿using System;
+﻿using HEF.Data;
+using System;
 using System.Linq.Expressions;
 
 namespace HEF.Repository
 {
     public interface IDbRepository<TEntity> where TEntity : class
     {
+        IDbConnectionContext ConnectionContext { get; }
+
         #region 查询
         /// <summary>
         /// 根据主键获取实体

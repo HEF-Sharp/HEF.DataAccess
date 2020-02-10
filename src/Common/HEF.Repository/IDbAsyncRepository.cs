@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using HEF.Data;
 
 namespace HEF.Repository
 {
     public interface IDbAsyncRepository<TEntity> where TEntity : class
     {
+        IDbAsyncConnectionContext AsyncConnectionContext { get; }
+
         #region 查询
         /// <summary>
         /// 根据主键获取实体

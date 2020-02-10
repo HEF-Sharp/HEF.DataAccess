@@ -9,7 +9,9 @@ namespace HEF.Data
 
         IDbTransaction Transaction { get; }
 
-        IDbConnectionContext UseTransaction(IsolationLevel isolationLevel);
+        void EnsureConnectionOpen();
+
+        IDbConnectionContext UseTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
         IDbConnectionContext Commit();
 

@@ -9,15 +9,15 @@ namespace HEF.Data.Query
 {
     public class DbCommandBuilder : IDbCommandBuilder
     {
-        private readonly IDbConnectionContext _connectionContext;
-
         private readonly StringBuilder _commandTextBuilder = new StringBuilder();
         private readonly List<SqlParameter> _parameters = new List<SqlParameter>();
 
         public DbCommandBuilder(IDbConnectionContext connectionContext)
         {
-            _connectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
+            ConnectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
         }
+
+        public IDbConnectionContext ConnectionContext { get; }
 
         public IReadOnlyList<SqlParameter> Parameters => _parameters;
 
@@ -49,12 +49,12 @@ namespace HEF.Data.Query
 
         public IDbCommand Build()
         {
-            var command = _connectionContext.Connection.CreateCommand();
+            var command = ConnectionContext.Connection.CreateCommand();
 
             command.CommandText = _commandTextBuilder.ToString();
 
-            if (_connectionContext.Transaction != null)
-                command.Transaction = _connectionContext.Transaction;
+            if (ConnectionContext.Transaction != null)
+                command.Transaction = ConnectionContext.Transaction;
 
             foreach (var param in Parameters)
             {

@@ -6,6 +6,8 @@ namespace HEF.Data.Query
 {
     public interface IDbCommandBuilder
     {
+        IDbConnectionContext ConnectionContext { get; }
+
         IReadOnlyList<SqlParameter> Parameters { get; }
 
         IDbCommandBuilder Append(string sqlText);
