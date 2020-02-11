@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HEF.Data;
+using System;
 using System.Collections.Generic;
 
 namespace HEF.Repository.Dapper
@@ -33,10 +34,5 @@ namespace HEF.Repository.Dapper
 
             return _simpleTypes.Contains(unwrapType);
         }
-
-        internal static Type UnwrapNullableType(this Type type) => Nullable.GetUnderlyingType(type) ?? type;
-
-        internal static bool IsNullableValueType(this Type type)
-            => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 }

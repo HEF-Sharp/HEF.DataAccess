@@ -7,14 +7,6 @@ namespace HEF.Data.Query
 {
     internal static class TypeExtensions
     {
-        internal static Type UnwrapNullableType(this Type type) => Nullable.GetUnderlyingType(type) ?? type;
-
-        internal static bool IsNullableValueType(this Type type)
-            => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
-
-        internal static bool IsNullableType(this Type type)
-            => !type.IsValueType || type.IsNullableValueType();
-
         internal static Type GetSequenceType(this Type type)
         {
             var sequenceType = TryGetSequenceType(type);

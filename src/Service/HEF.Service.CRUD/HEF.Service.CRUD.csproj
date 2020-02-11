@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HEF.Core" Version="1.0.3" />
+    <PackageReference Include="HEF.Entity" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HEF.Service\HEF.Service.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -90,7 +90,7 @@ namespace HEF.Expressions
                 {
                     // check for unnecessary convert & strip them
                     var u = (UnaryExpression)e;
-                    if (TypeHelper.GetNonNullableType(u.Operand.Type) == TypeHelper.GetNonNullableType(type))
+                    if (u.Operand.Type.UnwrapNullableType() == type.UnwrapNullableType())
                     {
                         e = ((UnaryExpression)e).Operand;
                     }
@@ -103,7 +103,7 @@ namespace HEF.Expressions
                     {
                         return e;
                     }
-                    else if (TypeHelper.GetNonNullableType(e.Type) == TypeHelper.GetNonNullableType(type))
+                    else if (e.Type.UnwrapNullableType() == type.UnwrapNullableType())
                     {
                         return Expression.Constant(((ConstantExpression)e).Value, type);
                     }

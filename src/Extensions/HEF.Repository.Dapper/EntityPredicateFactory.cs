@@ -54,7 +54,7 @@ namespace HEF.Repository.Dapper
                 var propertyEqualExpr = Expression.Equal(propertyExpr, propertyValueExpr);
 
                 bodyExpr = (bodyExpr == null) ? propertyEqualExpr
-                    : Expression.AndAlso(bodyExpr, propertyEqualExpr); //多个主键字段 进行AND运算
+                    : Expression.AndAlso(bodyExpr, propertyEqualExpr); //多个字段 进行AND运算
             }
 
             return Expression.Lambda<Func<TEntity, bool>>(bodyExpr, parameterExpr);            
