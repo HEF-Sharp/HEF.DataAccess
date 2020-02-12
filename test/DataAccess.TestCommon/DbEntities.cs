@@ -12,5 +12,6 @@ namespace DataAccess.TestCommon
         public string Country { get; set; }
         public decimal Balance { get; set; }
         public DateTime createTime { get; set; }
+        public string IsDel { get; set; }
     }
 }

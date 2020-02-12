@@ -10,11 +10,22 @@ namespace HEF.Sql.Entity
 {
     public static class EntityMapperExtensions
     {
+        public static IPropertyMap GetDeleteFlagProperty(this IEntityMapper entityMapper)
+        {
+            if (entityMapper == null)
+                throw new ArgumentNullException(nameof(entityMapper));
+
+            return entityMapper.Properties.Where(p => p.IsDeleteFlag).SingleOrDefault();
+        }
+
         public static IEnumerable<IPropertyMap> GetProperties<TEntity>(this IEntityMapper entityMapper,
             Func<IPropertyMap, bool> propertyPredicate,
             bool isExclude, params Expression<Func<TEntity, object>>[] propertyExpressions)
             where TEntity : class
         {
+            if (entityMapper == null)
+                throw new ArgumentNullException(nameof(entityMapper));
+
             if (isExclude)
                 return GetPropertiesByExclude(entityMapper, propertyPredicate, propertyExpressions);
 

@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using HEF.Data;
+using HEF.Entity.Mapper;
 using HEF.Sql;
 using HEF.Sql.Entity;
 using HEF.Util;
@@ -11,15 +12,21 @@ namespace HEF.Repository.Dapper
 {
     public class DapperRepository<TEntity> : IDapperRepository<TEntity> where TEntity : class
     {
+        private readonly Lazy<bool> _hasDeleteFlag;
+
         public DapperRepository(IDbConnectionContext connectionContext,
             IEntitySqlBuilderFactory entitySqlBuilderFactory,
-            IEntityPredicateFactory entityPredicateFactory)
+            IEntityPredicateFactory entityPredicateFactory,
+            IEntityMapperProvider mapperProvider)
         {
             ConnectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
             AsyncConnectionContext = ConnectionContext.AsAsync();
 
             EntitySqlBuilderFactory = entitySqlBuilderFactory ?? throw new ArgumentNullException(nameof(entitySqlBuilderFactory));
             EntityPredicateFactory = entityPredicateFactory ?? throw new ArgumentNullException(nameof(entityPredicateFactory));
+
+            MapperProvider = mapperProvider ?? throw new ArgumentNullException(nameof(mapperProvider));
+            _hasDeleteFlag = new Lazy<bool>(() => MapperProvider.GetEntityMapper<TEntity>().GetDeleteFlagProperty() != null);
         }
 
         #region Injected Properties
@@ -30,6 +37,12 @@ namespace HEF.Repository.Dapper
         protected IEntitySqlBuilderFactory EntitySqlBuilderFactory { get; }
 
         protected IEntityPredicateFactory EntityPredicateFactory { get; }
+
+        protected IEntityMapperProvider MapperProvider { get; }
+        #endregion
+
+        #region DeleteFlag Properties
+        protected bool HasDeleteFlag => _hasDeleteFlag.Value;
         #endregion
 
         #region Helper Functions
@@ -89,6 +102,7 @@ namespace HEF.Repository.Dapper
             return insertSqlBuilder.Build();
         }
 
+        #region Update
         protected SqlSentence BuildUpdateSql(TEntity entity, bool isExclude,
             params Expression<Func<TEntity, object>>[] propertyExpressions)
         {
@@ -116,7 +130,9 @@ namespace HEF.Repository.Dapper
 
             return updateSqlBuilder.Build();
         }
+        #endregion
 
+        #region Delete
         protected SqlSentence BuildDeleteSql(TEntity entity)
         {
             var keyPredicate = EntityPredicateFactory.GetKeyPredicate(entity);
@@ -148,6 +164,45 @@ namespace HEF.Repository.Dapper
 
             return deleteSqlBuilder.Build();
         }
+        #endregion
+
+        #region DeleteFlag
+        protected SqlSentence BuildUpdateDeleteFlagSql(TEntity entity)
+        {
+            var keyPredicate = EntityPredicateFactory.GetKeyPredicate(entity);
+            var updateSqlBuilder = EntitySqlBuilderFactory.Update<TEntity>()
+                .Table()
+                .ColumnDeleteFlag()
+                .Where(keyPredicate);
+
+            return updateSqlBuilder.Build();
+        }
+
+        protected SqlSentence BuildUpdateDeleteFlagByKeySql(object id)
+        {
+            var keyPredicate = EntityPredicateFactory.GetKeyPredicate<TEntity>(id);
+            var updateSqlBuilder = EntitySqlBuilderFactory.Update<TEntity>()
+                .Table()
+                .ColumnDeleteFlag()
+                .Where(keyPredicate);
+
+            return updateSqlBuilder.Build();
+        }
+
+        protected SqlSentence BuildUpdateDeleteFlagByWhereSql(TEntity entity,
+            params Expression<Func<TEntity, object>>[] wherePropertyExpressions)
+        {
+            var propertyPredicate = EntityPredicateFactory.GetPropertyPredicate(
+                entity, wherePropertyExpressions);
+            var updateSqlBuilder = EntitySqlBuilderFactory.Update<TEntity>()
+                .Table()
+                .ColumnDeleteFlag()
+                .Where(propertyPredicate);
+
+            return updateSqlBuilder.Build();
+        }
+        #endregion
+
         #endregion
 
         #region Sync
@@ -247,7 +302,7 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int DeleteByKey(object id)
         {
-            var sqlSentence = BuildDeleteByKeySql(id);
+            var sqlSentence = HasDeleteFlag ? BuildUpdateDeleteFlagByKeySql(id) : BuildDeleteByKeySql(id);
 
             return ExecuteSqlSentence(sqlSentence);
         }
@@ -259,7 +314,7 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int Delete(TEntity entity)
         {
-            var sqlSentence = BuildDeleteSql(entity);
+            var sqlSentence = HasDeleteFlag ? BuildUpdateDeleteFlagSql(entity) : BuildDeleteSql(entity);
 
             return ExecuteSqlSentence(sqlSentence);
         }
@@ -272,7 +327,8 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public int DeleteByWhere(TEntity entity, params Expression<Func<TEntity, object>>[] wherePropertyExpressions)
         {
-            var sqlSentence = BuildDeleteByWhereSql(entity, wherePropertyExpressions);
+            var sqlSentence = HasDeleteFlag ? BuildUpdateDeleteFlagByWhereSql(entity, wherePropertyExpressions)
+                : BuildDeleteByWhereSql(entity, wherePropertyExpressions);
 
             return ExecuteSqlSentence(sqlSentence);
         }
@@ -377,7 +433,7 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> DeleteByKeyAsync(object id)
         {
-            var sqlSentence = BuildDeleteByKeySql(id);
+            var sqlSentence = HasDeleteFlag ? BuildUpdateDeleteFlagByKeySql(id) : BuildDeleteByKeySql(id);
 
             return ExecuteSqlSentenceAsync(sqlSentence);
         }
@@ -389,7 +445,7 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> DeleteAsync(TEntity entity)
         {
-            var sqlSentence = BuildDeleteSql(entity);
+            var sqlSentence = HasDeleteFlag ? BuildUpdateDeleteFlagSql(entity) : BuildDeleteSql(entity);
 
             return ExecuteSqlSentenceAsync(sqlSentence);
         }
@@ -402,7 +458,8 @@ namespace HEF.Repository.Dapper
         /// <returns></returns>
         public Task<int> DeleteByWhereAsync(TEntity entity, params Expression<Func<TEntity, object>>[] wherePropertyExpressions)
         {
-            var sqlSentence = BuildDeleteByWhereSql(entity, wherePropertyExpressions);
+            var sqlSentence = HasDeleteFlag ? BuildUpdateDeleteFlagByWhereSql(entity, wherePropertyExpressions)
+                : BuildDeleteByWhereSql(entity, wherePropertyExpressions);
 
             return ExecuteSqlSentenceAsync(sqlSentence);
         }

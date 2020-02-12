@@ -68,6 +68,18 @@ namespace HEF.Sql.Entity
             return this;
         }
 
+        public UpdateSqlBuilder<TEntity> ColumnDeleteFlag()
+        {
+            var deleteFlagProperty = Mapper.GetDeleteFlagProperty();
+            if (deleteFlagProperty == null)
+                throw new InvalidOperationException("not found deleteFlag propety in entity");
+
+            SqlBuilder.Column(SqlFormatter.ColumnName(deleteFlagProperty),
+                SqlFormatter.Parameter(deleteFlagProperty.Name), deleteFlagProperty.DeleteFlagTrueValue);
+
+            return this;
+        }
+
         public UpdateSqlBuilder<TEntity> Where(Expression<Func<TEntity, bool>> predicateExpression)
         {
             var sqlSentence = ExprSqlResolver.Resolve(predicateExpression);

@@ -23,7 +23,8 @@ namespace HEF.Repository.Dapper.Test
         public static IDapperRepository<TEntity> GetDapperRepository<TEntity>()
             where TEntity : class
         {
-            return new DapperRepository<TEntity>(ConnectionContext, EntitySqlBuilderFactory, EntityPredicateFactory);
+            return new DapperRepository<TEntity>(ConnectionContext,
+                EntitySqlBuilderFactory, EntityPredicateFactory, TestStatic.MapperProvider);
         }
     }
 }
