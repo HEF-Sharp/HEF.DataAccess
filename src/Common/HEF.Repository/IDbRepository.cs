@@ -1,5 +1,6 @@
 ﻿using HEF.Data;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace HEF.Repository
@@ -15,6 +16,12 @@ namespace HEF.Repository
         /// <param name="id"></param>
         /// <returns></returns>
         TEntity GetByKey(object id);
+
+        /// <summary>
+        /// Queryable查询
+        /// </summary>
+        /// <returns></returns>
+        IQueryable<TEntity> Query();
         #endregion
 
         #region 插入

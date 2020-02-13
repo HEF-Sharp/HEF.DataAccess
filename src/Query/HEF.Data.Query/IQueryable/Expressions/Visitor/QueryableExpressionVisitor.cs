@@ -67,9 +67,6 @@ namespace HEF.Data.Query
 
         protected virtual EntityQueryExpression QueryWhere(EntityQueryExpression sourceExpr, LambdaExpression predicate)
         {
-            if (sourceExpr == null)
-                throw new ArgumentNullException(nameof(sourceExpr));
-
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));
 
@@ -80,9 +77,6 @@ namespace HEF.Data.Query
 
         protected virtual EntityQueryExpression QueryOrderBy(EntityQueryExpression sourceExpr, LambdaExpression keySelector, bool ascending)
         {
-            if (sourceExpr == null)
-                throw new ArgumentNullException(nameof(sourceExpr));
-
             if (keySelector == null)
                 throw new ArgumentNullException(nameof(keySelector));
 
@@ -93,9 +87,6 @@ namespace HEF.Data.Query
 
         protected virtual EntityQueryExpression QueryThenBy(EntityQueryExpression sourceExpr, LambdaExpression keySelector, bool ascending)
         {
-            if (sourceExpr == null)
-                throw new ArgumentNullException(nameof(sourceExpr));
-
             if (keySelector == null)
                 throw new ArgumentNullException(nameof(keySelector));
 
@@ -106,9 +97,6 @@ namespace HEF.Data.Query
 
         protected virtual EntityQueryExpression QuerySkip(EntityQueryExpression sourceExpr, Expression count)
         {
-            if (sourceExpr == null)
-                throw new ArgumentNullException(nameof(sourceExpr));
-
             if (count == null)
                 throw new ArgumentNullException(nameof(count));
 
@@ -119,9 +107,6 @@ namespace HEF.Data.Query
 
         protected virtual EntityQueryExpression QueryTake(EntityQueryExpression sourceExpr, Expression count)
         {
-            if (sourceExpr == null)
-                throw new ArgumentNullException(nameof(sourceExpr));
-
             if (count == null)
                 throw new ArgumentNullException(nameof(count));
 

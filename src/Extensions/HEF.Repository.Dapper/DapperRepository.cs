@@ -1,10 +1,12 @@
 ﻿using Dapper;
 using HEF.Data;
+using HEF.Data.Query;
 using HEF.Entity.Mapper;
 using HEF.Sql;
 using HEF.Sql.Entity;
 using HEF.Util;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -17,6 +19,7 @@ namespace HEF.Repository.Dapper
         public DapperRepository(IDbConnectionContext connectionContext,
             IEntitySqlBuilderFactory entitySqlBuilderFactory,
             IEntityPredicateFactory entityPredicateFactory,
+            IAsyncQueryProvider queryProvider,
             IEntityMapperProvider mapperProvider)
         {
             ConnectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
@@ -24,6 +27,8 @@ namespace HEF.Repository.Dapper
 
             EntitySqlBuilderFactory = entitySqlBuilderFactory ?? throw new ArgumentNullException(nameof(entitySqlBuilderFactory));
             EntityPredicateFactory = entityPredicateFactory ?? throw new ArgumentNullException(nameof(entityPredicateFactory));
+
+            QueryProvider = queryProvider ?? throw new ArgumentNullException(nameof(queryProvider));
 
             MapperProvider = mapperProvider ?? throw new ArgumentNullException(nameof(mapperProvider));
             _hasDeleteFlag = new Lazy<bool>(() => MapperProvider.GetEntityMapper<TEntity>().GetDeleteFlagProperty() != null);
@@ -37,6 +42,8 @@ namespace HEF.Repository.Dapper
         protected IEntitySqlBuilderFactory EntitySqlBuilderFactory { get; }
 
         protected IEntityPredicateFactory EntityPredicateFactory { get; }
+
+        protected IAsyncQueryProvider QueryProvider { get; }
 
         protected IEntityMapperProvider MapperProvider { get; }
         #endregion
@@ -221,6 +228,15 @@ namespace HEF.Repository.Dapper
                 sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
                 ConnectionContext.Transaction);
         }
+
+        /// <summary>
+        /// Queryable查询
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<TEntity> Query()
+        {
+            return new DbEntityQueryable<TEntity>(QueryProvider);
+        }
         #endregion
 
         #region 插入
@@ -351,6 +367,17 @@ namespace HEF.Repository.Dapper
             return AsyncConnectionContext.Connection.QuerySingleAsync<TEntity>(
                 sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
                 AsyncConnectionContext.Transaction);
+        }
+
+        /// <summary>
+        /// Queryable查询
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IQueryable<TEntity>> QueryAsync()
+        {
+            await Task.Yield();
+
+            return new DbEntityQueryable<TEntity>(QueryProvider);
         }
         #endregion
 

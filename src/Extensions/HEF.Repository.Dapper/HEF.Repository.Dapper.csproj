@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Common\HEF.Repository\HEF.Repository.csproj" />
+    <ProjectReference Include="..\..\Query\HEF.Data.Query\HEF.Data.Query.csproj" />
     <ProjectReference Include="..\HEF.Sql.Entity\HEF.Sql.Entity.csproj" />
   </ItemGroup>
   

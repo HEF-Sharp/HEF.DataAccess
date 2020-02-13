@@ -1,5 +1,7 @@
 ﻿using HEF.Core;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace HEF.Service.CRUD
@@ -9,6 +11,10 @@ namespace HEF.Service.CRUD
     {
         #region 查询
         HEFDoResult<TEntity> GetByKey(object id);
+
+        HEFDoResult<TEntity> GetSingle(Action<IQueryable<TEntity>> queryAction);
+
+        HEFDoResult<IList<TEntity>> GetList(Action<IQueryable<TEntity>> queryAction);
         #endregion
 
         #region 插入

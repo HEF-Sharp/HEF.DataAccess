@@ -1,7 +1,8 @@
-﻿using System;
+﻿using HEF.Data;
+using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using HEF.Data;
 
 namespace HEF.Repository
 {
@@ -16,6 +17,12 @@ namespace HEF.Repository
         /// <param name="id"></param>
         /// <returns></returns>
         Task<TEntity> GetByKeyAsync(object id);
+
+        /// <summary>
+        /// Queryable查询
+        /// </summary>
+        /// <returns></returns>
+        Task<IQueryable<TEntity>> QueryAsync();
         #endregion
 
         #region 插入

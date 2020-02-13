@@ -17,13 +17,14 @@ namespace HEF.Data.Query.Test
         }
 
         [Fact]
-        public void TestDbEntityQueryable2()
+        public void TestDbEntityQueryableSingle()
         {
             var customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
-            var customerList = customers.Where(m => m.CompanyName.StartsWith("drore"))
-                .OrderBy(m => m.createTime).ThenBy(m => m.id).Take(5).ToList();
+            var customer = customers.Where(m => m.CompanyName.StartsWith("drore")).Where(m => m.City == "Shanghai")
+                .ToList().Single();
 
-            Assert.True(customerList.Count > 0);
+            Assert.NotNull(customer);
+            Assert.True(customer.id > 0);
         }
     }
 }

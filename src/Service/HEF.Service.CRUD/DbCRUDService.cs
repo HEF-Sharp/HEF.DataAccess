@@ -1,6 +1,9 @@
 ﻿using HEF.Core;
 using HEF.Repository;
+using HEF.Util;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace HEF.Service.CRUD
@@ -19,6 +22,22 @@ namespace HEF.Service.CRUD
 
             return entity == null ? HEFDoResultHelper.DoNotFound<TEntity>($"not find the record of pkid: {id}")
                 : HEFDoResultHelper.DoSuccess(entity);
+        }
+
+        public virtual HEFDoResult<TEntity> GetSingle(Action<IQueryable<TEntity>> queryAction)
+        {
+            var result = Repository.Query().Action(queryAction).ToList().Single();
+
+            return result == null ? HEFDoResultHelper.DoNotFound<TEntity>("not found any record")
+               : HEFDoResultHelper.DoSuccess(result);
+        }
+
+        public virtual HEFDoResult<IList<TEntity>> GetList(Action<IQueryable<TEntity>> queryAction)
+        {
+            var results = Repository.Query().Action(queryAction).ToList();
+
+            return results.IsEmpty() ? HEFDoResultHelper.DoNotFound<IList<TEntity>>("not found any record")
+               : HEFDoResultHelper.DoSuccess<IList<TEntity>>(results);
         }
         #endregion
 
