@@ -1,12 +1,11 @@
 ﻿using HEF.Entity.Mapper;
+using HEF.Util;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Linq;
-using HEF.Util;
-using HEF.Sql.Entity;
+using System.Linq.Expressions;
 
-namespace HEF.Repository.Dapper
+namespace HEF.Sql.Entity
 {
     public class EntityPredicateFactory : IEntityPredicateFactory
     {
@@ -33,6 +32,7 @@ namespace HEF.Repository.Dapper
 
         protected static Expression<Func<TEntity, bool>> BuildPropertyPredicate<TEntity>(
             Func<IPropertyMap, object> propertyValueGetter,
+            Func<Expression, Expression, BinaryExpression> propertyCompareOperation,
             params IPropertyMap[] predicateProperties)
             where TEntity : class
         {
@@ -51,10 +51,10 @@ namespace HEF.Repository.Dapper
                 if (keyValue.GetType() != propertyType)
                     propertyValueExpr = Expression.Convert(propertyValueExpr, propertyType);
                 
-                var propertyEqualExpr = Expression.Equal(propertyExpr, propertyValueExpr);
+                var propertyCompareExpr = propertyCompareOperation(propertyExpr, propertyValueExpr);
 
-                bodyExpr = (bodyExpr == null) ? propertyEqualExpr
-                    : Expression.AndAlso(bodyExpr, propertyEqualExpr); //多个字段 进行AND运算
+                bodyExpr = (bodyExpr == null) ? propertyCompareExpr
+                    : Expression.AndAlso(bodyExpr, propertyCompareExpr); //多个字段 进行AND运算
             }
 
             return Expression.Lambda<Func<TEntity, bool>>(bodyExpr, parameterExpr);            
@@ -86,7 +86,8 @@ namespace HEF.Repository.Dapper
                 return keyValue;
             }
 
-            return BuildPropertyPredicate<TEntity>(keyPropertyValueGetter, keyProperties.ToArray());
+            return BuildPropertyPredicate<TEntity>(keyPropertyValueGetter,
+                Expression.Equal, keyProperties.ToArray());
         }
 
         public Expression<Func<TEntity, bool>> GetKeyPredicate<TEntity>(TEntity entity)
@@ -102,7 +103,8 @@ namespace HEF.Repository.Dapper
                 return EntityPropertyValueGetter(entity, property);
             }
 
-            return BuildPropertyPredicate<TEntity>(keyPropertyValueGetter, keyProperties.ToArray());
+            return BuildPropertyPredicate<TEntity>(keyPropertyValueGetter,
+                Expression.Equal, keyProperties.ToArray());
         }
 
         public Expression<Func<TEntity, bool>> GetPropertyPredicate<TEntity>(TEntity entity,
@@ -124,7 +126,25 @@ namespace HEF.Repository.Dapper
                 return EntityPropertyValueGetter(entity, property);
             }
 
-            return BuildPropertyPredicate<TEntity>(propertyValueGetter, whereProperties.ToArray());
+            return BuildPropertyPredicate<TEntity>(propertyValueGetter,
+                Expression.Equal, whereProperties.ToArray());
+        }
+
+        public Expression<Func<TEntity, bool>> GetDeleteFlagPredicate<TEntity>()
+            where TEntity : class
+        {
+            var mapper = MapperProvider.GetEntityMapper<TEntity>();
+            var deleteFlagProperty = mapper.GetDeleteFlagProperty();
+            if (deleteFlagProperty == null)
+                throw new InvalidOperationException("not found deleteFlag propety in entity");
+
+            object propertyValueGetter(IPropertyMap property)
+            {
+                return deleteFlagProperty.DeleteFlagTrueValue;
+            }
+
+            return BuildPropertyPredicate<TEntity>(propertyValueGetter,
+                Expression.NotEqual, deleteFlagProperty);
         }
     }
 }

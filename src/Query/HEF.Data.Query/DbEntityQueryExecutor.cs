@@ -121,6 +121,7 @@ namespace HEF.Data.Query
             //Todo: future get select column from SelectExpression
             return mapper.Properties.Where(SelectPropertyPredicate);
         }
+        #endregion
 
         #region Convert SelectSqlBuilder
         protected virtual ISelectSqlBuilder ConvertToSelectSqlBuilder(IEntityMapper mapper, SelectExpression selectExpression)
@@ -131,8 +132,11 @@ namespace HEF.Data.Query
             if (selectExpression == null)
                 throw new ArgumentNullException(nameof(selectExpression));
 
+            //设置 删除标识 where条件
+            CheckAddDeleteFlagPredicate(mapper, selectExpression);
+
             var sqlBuilder = SqlBuilderFactory.Select();
-            
+
             var selectProperties = GetSelectProperties(mapper, selectExpression);
             var whereSentence = ExprSqlResolver.Resolve(selectExpression.Predicate);
             var orderByStr = string.Join(",", selectExpression.Orderings.Select(ordering
@@ -151,7 +155,7 @@ namespace HEF.Data.Query
 
             if (whereSentence.Parameters.IsNotEmpty())
             {
-                foreach(var whereParam in whereSentence.Parameters)
+                foreach (var whereParam in whereSentence.Parameters)
                 {
                     sqlBuilder.Parameter(whereParam.ParameterName, whereParam.Value);
                 }
@@ -160,7 +164,36 @@ namespace HEF.Data.Query
             return sqlBuilder;
         }
 
-        protected virtual bool SelectPropertyPredicate(IPropertyMap propertyMap)
+        protected static void CheckAddDeleteFlagPredicate(IEntityMapper mapper, SelectExpression selectExpression)
+        {
+            var deleteFlagProperty = mapper.Properties.Where(p => p.IsDeleteFlag).SingleOrDefault();
+            if (deleteFlagProperty != null)
+            {
+                var deleteFlagPredicate = BuildDeleteFlagPredicate(mapper.EntityType, deleteFlagProperty);
+
+                selectExpression.ApplyPredicate(deleteFlagPredicate);
+            }
+        }
+
+        protected static LambdaExpression BuildDeleteFlagPredicate(Type entityType, IPropertyMap deleteFlagProperty)
+        {
+            var entityParameterExpr = Expression.Parameter(entityType, "entity");
+
+            //code: entity.IsDel != 'Y'
+            var deleteFlagPropertyExpr = Expression.Property(entityParameterExpr, deleteFlagProperty.PropertyInfo);
+
+            var deleteFlagPropertyType = deleteFlagProperty.PropertyInfo.PropertyType;
+            Expression deleteFlagTrueValueExpr = Expression.Constant(deleteFlagProperty.DeleteFlagTrueValue);
+            if (deleteFlagProperty.DeleteFlagTrueValue.GetType() != deleteFlagPropertyType)
+                deleteFlagTrueValueExpr = Expression.Convert(deleteFlagTrueValueExpr, deleteFlagPropertyType);
+
+            var deleteFlagNotEqualExpr = Expression.NotEqual(deleteFlagPropertyExpr, deleteFlagTrueValueExpr);
+
+            return Expression.Lambda(Expression.GetFuncType(entityType, typeof(bool)),
+                deleteFlagNotEqualExpr, entityParameterExpr);
+        }
+
+        protected static bool SelectPropertyPredicate(IPropertyMap propertyMap)
             => !propertyMap.Ignored && !propertyMap.IsReadOnly;  //排除只读忽略的属性
 
         protected virtual string FormatOrderByColumnStr(IEnumerable<IPropertyMap> sourceProperties, OrderingExpression orderingExpression)
@@ -184,7 +217,7 @@ namespace HEF.Data.Query
         private static readonly MethodInfo _dictGetValueMethod = typeof(IDictionary<string, int>).GetRuntimeMethod(
             nameof(IDictionary<string, int>.TryGetValue), new[] { typeof(string), typeof(int).MakeByRefType() });
 
-        protected virtual LambdaExpression BuildQueryElementFactory(Type elementType,
+        protected static LambdaExpression BuildQueryElementFactory(Type elementType,
             params IPropertyMap[] selectProperties)
         {
             var dataReaderParameter = Expression.Parameter(typeof(DbDataReader), "dataReader");
@@ -209,7 +242,7 @@ namespace HEF.Data.Query
                 foreach (var selectProperty in selectProperties)
                 {
                     // propertyIndexMap.TryGetValue(propertyName, out propertyIndex);
-                    var propertyNameExpr = Expression.Constant(selectProperty.Name);                    
+                    var propertyNameExpr = Expression.Constant(selectProperty.Name);
                     var getPropertyIndexExpr = Expression.Call(propertyIndexMapParameter, _dictGetValueMethod,
                         propertyNameExpr, propertyIndexVariableExpr);
                     bodyExprs.Add(getPropertyIndexExpr);
@@ -237,14 +270,14 @@ namespace HEF.Data.Query
             return Expression.Lambda(delegateType, factoryBodyExpr, dataReaderParameter, propertyIndexMapParameter);
         }
 
-        protected virtual Expression CreateGetPropertyValueExpression(ParameterExpression dataReaderParameter,
+        protected static Expression CreateGetPropertyValueExpression(ParameterExpression dataReaderParameter,
             IPropertyMap selectProperty, Expression propertyIndexExpr)
         {
             // dataReader.IsDBNull(propertyIndex) ? default(PropertyType) : dataReader.GetValue(propertyIndex);
             var propertyType = selectProperty.PropertyInfo.PropertyType;
             var getPropertyValueMethod = DataReaderMethods.GetDataReaderGetValueMethod(propertyType);
             Expression propertyValueExpr = Expression.Call(dataReaderParameter, getPropertyValueMethod, propertyIndexExpr);
-            
+
             if (propertyType.IsNullableType())
             {
                 propertyValueExpr = Expression.Condition(
@@ -255,8 +288,6 @@ namespace HEF.Data.Query
 
             return propertyValueExpr;
         }
-        #endregion
-
         #endregion
     }
 }

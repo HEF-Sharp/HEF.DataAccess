@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HEF.Repository.Dapper
+namespace HEF.Sql.Entity
 {
     internal static class TypeExtensions
     {

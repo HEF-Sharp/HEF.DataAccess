@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace HEF.Repository.Dapper
+namespace HEF.Sql.Entity
 {
     public interface IEntityPredicateFactory
     {
@@ -11,5 +11,7 @@ namespace HEF.Repository.Dapper
 
         Expression<Func<TEntity, bool>> GetPropertyPredicate<TEntity>(TEntity entity,
             params Expression<Func<TEntity, object>>[] wherePropertyExpressions) where TEntity : class;
+
+        Expression<Func<TEntity, bool>> GetDeleteFlagPredicate<TEntity>() where TEntity : class;
     }
 }
