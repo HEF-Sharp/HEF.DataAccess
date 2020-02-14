@@ -16,6 +16,9 @@ namespace HEF.Service.CRUD
         Task<HEFDoResult<TEntity>> GetSingleAsync(Action<IQueryable<TEntity>> queryAction);
 
         Task<HEFDoResult<IList<TEntity>>> GetListAsync(Action<IQueryable<TEntity>> queryAction);
+
+        Task<HEFDoResult<HEFPageData<TEntity>>> GetPageList(int currentPage, int pageSize,
+            Action<IQueryable<TEntity>> queryAction);
         #endregion
 
         #region 插入

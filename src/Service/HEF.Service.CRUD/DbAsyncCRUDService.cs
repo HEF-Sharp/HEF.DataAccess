@@ -42,6 +42,17 @@ namespace HEF.Service.CRUD
             return results.IsEmpty() ? HEFDoResultHelper.DoNotFound<IList<TEntity>>("not found any record")
                : HEFDoResultHelper.DoSuccess<IList<TEntity>>(results);
         }
+
+        public virtual async Task<HEFDoResult<HEFPageData<TEntity>>> GetPageList(int currentPage, int pageSize,
+            Action<IQueryable<TEntity>> queryAction)
+        {
+            var queryable = await Repository.QueryAsync();
+            var pageResults = queryable.Action(queryAction).GetPageList(currentPage, pageSize);
+
+            return pageResults.Data.IsEmpty()
+                ? HEFDoResultHelper.DoNotFound<HEFPageData<TEntity>>("not found any record of target page")
+                : HEFDoResultHelper.DoSuccess(pageResults);
+        }
         #endregion
 
         #region 插入

@@ -15,6 +15,9 @@ namespace HEF.Service.CRUD
         HEFDoResult<TEntity> GetSingle(Action<IQueryable<TEntity>> queryAction);
 
         HEFDoResult<IList<TEntity>> GetList(Action<IQueryable<TEntity>> queryAction);
+
+        HEFDoResult<HEFPageData<TEntity>> GetPageList(int currentPage, int pageSize,
+            Action<IQueryable<TEntity>> queryAction);
         #endregion
 
         #region 插入
