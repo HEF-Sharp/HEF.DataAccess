@@ -16,6 +16,8 @@ namespace HEF.Data.Query
 
         public Type EntityType { get; }
 
+        public ColumnSqlExpression ColumnSql { get; private set; }
+
         public LambdaExpression Predicate { get; private set; }
 
         public IReadOnlyList<OrderingExpression> Orderings => _orderings;
@@ -27,6 +29,14 @@ namespace HEF.Data.Query
         public override Type Type => typeof(object);
 
         public sealed override ExpressionType NodeType => ExpressionType.Extension;
+
+        public virtual void ApplyColumn(ColumnSqlExpression columnSqlExpression)
+        {
+            if (columnSqlExpression == null)
+                throw new ArgumentNullException(nameof(columnSqlExpression));
+
+            ColumnSql = columnSqlExpression;
+        }
 
         public virtual void ApplyPredicate(LambdaExpression whereExpression)
         {
@@ -59,6 +69,25 @@ namespace HEF.Data.Query
             if (_orderings.FirstOrDefault(o => o.Expression.Equals(orderingExpression.Expression)) == null)
             {
                 _orderings.Add(orderingExpression);
+            }
+        }
+
+        public virtual void ClearOrdering()
+        {
+            _orderings.Clear();
+        }
+
+        public virtual void ReverseOrderings()
+        {
+            var existingOrdering = _orderings.ToArray();
+
+            _orderings.Clear();
+
+            for (var i = 0; i < existingOrdering.Length; i++)
+            {
+                _orderings.Add(
+                    new OrderingExpression(existingOrdering[i].Expression,
+                    !existingOrdering[i].IsAscending));
             }
         }
 

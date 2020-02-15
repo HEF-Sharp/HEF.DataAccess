@@ -42,7 +42,7 @@ namespace HEF.Data.Query
         public static IDictionary<string, int> BuildSelectPropertyIndexMap(
             IReadOnlyList<IPropertyMap> selectProperties, DbDataReader dataReader)
         {
-            if (selectProperties.IsEmpty())            
+            if (selectProperties.IsEmpty())
                 return null;
             
             var readerColumns = Enumerable.Range(0, dataReader.FieldCount)

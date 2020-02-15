@@ -33,7 +33,7 @@ namespace HEF.Service.CRUD
             var pageData = new HEFPageData<TEntity>() { PageIndex = currentPage, PageSize = pageSize };
 
             pageData.Data = queryable.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
-            pageData.Total = 0;  //Todo: Get Queryable Total count
+            pageData.Total = queryable.Count();
 
             return pageData;
         }

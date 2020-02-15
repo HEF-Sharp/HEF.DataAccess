@@ -26,5 +26,18 @@ namespace HEF.Data.Query.Test
             Assert.NotNull(customer);
             Assert.True(customer.id > 0);
         }
+
+        [Fact]
+        public void TestDbEntityQueryableCount()
+        {
+            var customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
+            var customerQueryable = customers.Where(m => m.CompanyName.StartsWith("drore"));
+
+            var customerList = customerQueryable.Take(5).ToList();
+            var customerCount = customerQueryable.Count();
+
+            Assert.True(customerList.Count > 0);
+            Assert.True(customerCount > 0);
+        }
     }
 }
