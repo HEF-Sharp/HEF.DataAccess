@@ -28,7 +28,7 @@ namespace HEF.Service.CRUD
         public virtual async Task<HEFDoResult<TEntity>> GetSingleAsync(Action<IQueryable<TEntity>> queryAction)
         {
             var queryable = await Repository.QueryAsync();
-            var result = queryable.Action(queryAction).ToList().Single();
+            var result = queryable.Action(queryAction).Single();
 
             return result == null ? HEFDoResultHelper.DoNotFound<TEntity>("not found any record")
                : HEFDoResultHelper.DoSuccess(result);

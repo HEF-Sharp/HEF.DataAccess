@@ -26,7 +26,7 @@ namespace HEF.Service.CRUD
 
         public virtual HEFDoResult<TEntity> GetSingle(Action<IQueryable<TEntity>> queryAction)
         {
-            var result = Repository.Query().Action(queryAction).ToList().Single();
+            var result = Repository.Query().Action(queryAction).Single();
 
             return result == null ? HEFDoResultHelper.DoNotFound<TEntity>("not found any record")
                : HEFDoResultHelper.DoSuccess(result);

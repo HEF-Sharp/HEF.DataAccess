@@ -9,7 +9,7 @@ namespace HEF.Data.Query.Test
         [Fact]
         public void TestDbEntityQueryable()
         {
-            var customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
+            IQueryable<Customer> customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
             var customerList = customers.Where(m => m.CompanyName.StartsWith("drore")).Where(m => m.City == "Hangzhou")
                 .OrderBy(m => m.createTime).ThenBy(m => m.id).Skip(1).Take(5).ToList();
 
@@ -19,25 +19,32 @@ namespace HEF.Data.Query.Test
         [Fact]
         public void TestDbEntityQueryableSingle()
         {
-            var customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
-            var customer = customers.Where(m => m.CompanyName.StartsWith("drore")).Where(m => m.City == "Shanghai")
-                .ToList().Single();
+            IQueryable<Customer> customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
+            var customer = customers.Where(m => m.CompanyName.StartsWith("drore"))
+                .Where(m => m.City == "Shanghai").Single();
 
             Assert.NotNull(customer);
             Assert.True(customer.id > 0);
+
+            customer = customers.Where(m => m.CompanyName.StartsWith("drore"))
+                .Where(m => m.City == "Wuhan").SingleOrDefault();
+
+            Assert.Null(customer);
         }
 
         [Fact]
         public void TestDbEntityQueryableCount()
         {
-            var customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
+            IQueryable<Customer> customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
             var customerQueryable = customers.Where(m => m.CompanyName.StartsWith("drore"));
 
             var customerList = customerQueryable.Take(5).ToList();
             var customerCount = customerQueryable.Count();
+            var customerLongCount = customerQueryable.LongCount(m => m.City == "Hangzhou");
 
             Assert.True(customerList.Count > 0);
             Assert.True(customerCount > 0);
+            Assert.True(customerLongCount > 0);
         }
     }
 }
