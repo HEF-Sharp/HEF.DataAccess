@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace HEF.Data.Query
 {
-    internal static class EnumerableMethods
+    public static class EnumerableMethods
     {
         public static MethodInfo AsEnumerable { get; }
         public static MethodInfo Cast { get; }
