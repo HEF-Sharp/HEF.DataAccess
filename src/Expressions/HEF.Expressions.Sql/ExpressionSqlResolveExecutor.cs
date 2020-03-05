@@ -193,7 +193,7 @@ namespace HEF.Expressions.Sql
                     Visit(rightExpr);
                     break;
                 default:
-                    throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", node.NodeType));
+                    throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
             }
             Write(")");
 

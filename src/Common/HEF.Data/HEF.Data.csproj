@@ -8,10 +8,12 @@
     <Authors>wanlitao</Authors>
     <Description>HEF Data Component</Description>
     <Company>GreatBillows</Company>
-    <Copyright>Copyright © GreatBillows 2019</Copyright>
+    <Copyright>Copyright © GreatBillows 2020</Copyright>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/HEF-Sharp/HEF.DataAccess</PackageProjectUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/HEF-Sharp/HEF.DataAccess.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
 </Project>
