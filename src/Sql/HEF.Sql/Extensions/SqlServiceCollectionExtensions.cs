@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddSqlBuilder(this IServiceCollection serviceCollection)
         {
-            serviceCollection.TryAddSingleton<ISqlBuilderFactory, SqlBuilderFactory>();            
+            serviceCollection.TryAddSingleton<ISqlBuilderFactory, SqlBuilderFactory>();
 
             return serviceCollection;
         }

@@ -57,7 +57,7 @@ namespace HEF.Sql.Entity
                     : Expression.AndAlso(bodyExpr, propertyCompareExpr); //多个字段 进行AND运算
             }
 
-            return Expression.Lambda<Func<TEntity, bool>>(bodyExpr, parameterExpr);            
+            return Expression.Lambda<Func<TEntity, bool>>(bodyExpr, parameterExpr);
         }
         #endregion
 
