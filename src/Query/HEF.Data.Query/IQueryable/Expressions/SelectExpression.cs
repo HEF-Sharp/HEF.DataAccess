@@ -107,7 +107,7 @@ namespace HEF.Data.Query
             Offset = countExpression as ConstantExpression;
         }
 
-        protected virtual LambdaExpression CombinePredicates(LambdaExpression leftPredicate, LambdaExpression rightPredicate)
+        protected static LambdaExpression CombinePredicates(LambdaExpression leftPredicate, LambdaExpression rightPredicate)
         {
             if (leftPredicate == null)
                 return rightPredicate;
