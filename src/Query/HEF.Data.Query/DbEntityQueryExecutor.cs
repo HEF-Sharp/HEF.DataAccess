@@ -241,9 +241,12 @@ namespace HEF.Data.Query
             params IPropertyMap[] selectProperties)
         {
             if (selectProperties.IsEmpty())
-                return BuildQueryReturnTypeFactory(returnType);
+                return LambdaExpressionCache.GetLambdaExpression($"{returnType}_dataReader_factory",
+                    (key) => BuildQueryReturnTypeFactory(returnType));
 
-            return BuildQueryReturnEntityFactory(returnType, selectProperties);
+            return LambdaExpressionCache.GetLambdaExpression(
+                $"{returnType}_{string.Join(",", selectProperties.Select(m => m.Name))}_dataReader_factory",
+                (key) => BuildQueryReturnEntityFactory(returnType, selectProperties));
         }
 
         protected static LambdaExpression BuildQueryReturnTypeFactory(Type returnType)

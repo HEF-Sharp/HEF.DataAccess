@@ -1,5 +1,6 @@
 ﻿using DataAccess.TestCommon;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -115,6 +116,19 @@ namespace HEF.Expressions.Sql.Test
             sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
             Assert.Equal("(UPPER(LOWER(SUBSTRING(REPLACE(TRIM(`CompanyName`), @p0, @p1), 3 + 1))) = @p2)", sqlSentence.SqlText, true);
+            Assert.Equal(3, sqlSentence.Parameters.Length);
+        }
+
+        [Fact]
+        public void TestResolveIEnumerableContainMethod()
+        {
+            var idList = new long[] { 1, 3, 5, 6 };
+            var cityList = new[] { "Hangzhou", "Shanghai", "Wuhan" };
+            Expression<Func<Customer, bool>> customerPredicate = x => idList.Contains(x.id) && cityList.Contains(x.City);
+
+            var sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
+
+            Assert.Equal("((`id` In (1, 3, 5, 6)) and (`City` In (@p0, @p1, @p2)))", sqlSentence.SqlText, true);
             Assert.Equal(3, sqlSentence.Parameters.Length);
         }
     }

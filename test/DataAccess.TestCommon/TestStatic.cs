@@ -1,23 +1,25 @@
-﻿using HEF.Entity.Mapper;
-using HEF.Expressions.Sql;
-using HEF.Sql.Formatter;
+﻿using HEF.Expressions.Sql;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace DataAccess.TestCommon
 {
     public static class TestStatic
     {
-        public static IEntityMapperProvider MapperProvider = new EntityMapperProvider(typeof(DbEntityMapper<>));
+        public static IServiceProvider SqlServiceProvider = new ServiceCollection()
+            .AddEntityMapperProvider(typeof(DbEntityMapper<>))
+            .AddSqlFormatter()
+            .AddExpressionToSql()
+            .BuildServiceProvider();
 
-        public static IEntitySqlFormatter SqlFormatter = new EntitySqlFormatter(new SqlFormatter());
+        public static IServiceProvider MySqlServiceProvider = new ServiceCollection()
+            .AddEntityMapperProvider(typeof(DbEntityMapper<>))
+            .AddMySqlFormatter()
+            .AddExpressionToMySql()
+            .BuildServiceProvider();
+        
+        public static IExpressionSqlResolver ExprSqlResolver = SqlServiceProvider.GetRequiredService<IExpressionSqlResolver>();
 
-        public static IEntitySqlFormatter MySqlFormatter = new EntitySqlFormatter(new MySqlFormatter());
-
-        public static IMethodCallSqlResolver MethodSqlResolver = new MethodCallSqlResolver();
-
-        public static IMethodCallSqlResolver MethodMySqlResolver = new MethodCallMySqlResolver();
-
-        public static IExpressionSqlResolver ExprSqlResolver = new ExpressionSqlResolver(MapperProvider, SqlFormatter, MethodSqlResolver);
-
-        public static IExpressionSqlResolver ExprMySqlResolver = new ExpressionSqlResolver(MapperProvider, MySqlFormatter, MethodMySqlResolver);
+        public static IExpressionSqlResolver ExprMySqlResolver = MySqlServiceProvider.GetRequiredService<IExpressionSqlResolver>();
     }
 }

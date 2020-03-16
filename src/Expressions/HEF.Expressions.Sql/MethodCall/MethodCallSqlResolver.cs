@@ -6,41 +6,23 @@ namespace HEF.Expressions.Sql
 {
     public class MethodCallSqlResolver : IMethodCallSqlResolver
     {
-        public MethodCallSqlResolver()
+        public MethodCallSqlResolver(IEnumerable<IMethodCallSqlResolveExecutor> methodSqlResolveExecutors)
         {
-            MethodSqlResolveExecutors = new Dictionary<string, IMethodCallSqlResolveExecutor>();
+            if (methodSqlResolveExecutors == null)
+                throw new ArgumentNullException(nameof(methodSqlResolveExecutors));
 
-            InitMethodResolveExecutors();
+            MethodSqlResolveExecutors = new Dictionary<string, IMethodCallSqlResolveExecutor>();
+            InitMethodResolveExecutors(methodSqlResolveExecutors);
         }
 
         protected IDictionary<string, IMethodCallSqlResolveExecutor> MethodSqlResolveExecutors { get; }
 
-        private void InitMethodResolveExecutors()
+        private void InitMethodResolveExecutors(IEnumerable<IMethodCallSqlResolveExecutor> methodSqlResolveExecutors)
         {
-            AddOrUpdateResolveExecutor(new ObjectEqualsSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new EquatableSqlResolveExecutor());
-
-            AddOrUpdateResolveExecutor(new CompareSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new ComparableSqlResolveExecutor());
-
-            AddOrUpdateResolveExecutor(new DateTimeAddMethodsSqlResolveExecutor());
-            
-            AddOrUpdateResolveExecutor(new DecimalMathOperationsSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new DecimalRoundMethodsSqlResolveExecutor());
-
-            AddOrUpdateResolveExecutor(new MathRoundMethodsSqlResolveExecutor());
-
-            //String Methods
-            AddOrUpdateResolveExecutor(new StringStartsWithSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringEndsWithSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringContainsSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringConcatSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringIsNullOrEmptySqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringToUpperSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringToLowerSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringReplaceSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringSubstringSqlResolveExecutor());
-            AddOrUpdateResolveExecutor(new StringTrimSqlResolveExecutor());
+            foreach(var methodSqlResolveExecutor in methodSqlResolveExecutors)
+            {
+                AddOrUpdateResolveExecutor(methodSqlResolveExecutor);
+            }
         }
 
         protected void AddOrUpdateResolveExecutor(IMethodCallSqlResolveExecutor methodSqlResolveExecutor)

@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HEF.Entity" Version="1.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Extensions\HEF.Expressions.Sql.MySql\HEF.Expressions.Sql.MySql.csproj" />
   </ItemGroup>
 

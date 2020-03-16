@@ -1,7 +1,9 @@
 ﻿using HEF.Entity.Mapper;
 using HEF.Sql;
 using HEF.Sql.Formatter;
+using HEF.Util;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -351,6 +353,17 @@ namespace HEF.Expressions.Sql
                 Write(Convert.ChangeType(value, Enum.GetUnderlyingType(valueType)));
                 return;
             }
+
+            if (!constantType.Is<string>() && constantType.Is(typeof(IEnumerable<>))
+                && value is IEnumerable valueList)
+            {
+                var elementType = constantType.GetInterfaces()
+                    .Single(itype => itype.IsGenericType && itype.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                    .GetGenericArguments()[0];
+
+                WriteEnumerableConstant(elementType, valueList);
+                return;
+            }
             
             switch (Type.GetTypeCode(valueType))
             {
@@ -378,6 +391,23 @@ namespace HEF.Expressions.Sql
                     Write(value);
                     break;
             }
+        }
+
+        protected virtual void WriteEnumerableConstant(Type elementType, IEnumerable valueList)
+        {
+            if (valueList == null)
+                throw new ArgumentNullException(nameof(valueList));
+
+            Write("(");
+            int index = 0;
+            foreach (var valueItem in valueList)
+            {
+                if (index++ > 0)
+                    Write(", ");
+
+                WriteConstant(elementType, valueItem);
+            }
+            Write(")");
         }
         #endregion
 

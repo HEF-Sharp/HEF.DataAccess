@@ -1,24 +1,24 @@
 ﻿using DataAccess.TestCommon;
-using HEF.Data;
-using HEF.Data.MySql;
-using HEF.Sql;
-using HEF.Sql.Entity;
-using HEF.Data.Query.Test;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace HEF.Repository.Dapper.Test
 {
     public static class RepositoryTestStatic
     {
-        public static IEntitySqlBuilderFactory EntitySqlBuilderFactory = new EntitySqlBuilderFactory(QueryTestStatic.SqlBuilderFactory,
-            TestStatic.MapperProvider, TestStatic.MySqlFormatter, TestStatic.ExprMySqlResolver);
-
-        public static IEntityPredicateFactory EntityPredicateFactory = new EntityPredicateFactory(TestStatic.MapperProvider);
+        public static IServiceProvider MySqlServiceProvider = new ServiceCollection()
+            .AddEntityMapperProvider(typeof(DbEntityMapper<>))
+            .AddMySqlConnection("server=localhost;port=3306;database=develop_test;uid=root;pwd=aaacdb0074")
+            .AddMySqlFormatter()
+            .AddSqlBuilder()
+            .AddExpressionToMySql()
+            .AddDapperRepository()            
+            .BuildServiceProvider();
 
         public static IDapperRepository<TEntity> GetDapperRepository<TEntity>()
             where TEntity : class
         {
-            return new DapperRepository<TEntity>(QueryTestStatic.ConnectionContext,
-                EntitySqlBuilderFactory, EntityPredicateFactory, QueryTestStatic.AsyncQueryProvider, TestStatic.MapperProvider);
+            return MySqlServiceProvider.GetRequiredService<IDapperRepository<TEntity>>();
         }
     }
 }

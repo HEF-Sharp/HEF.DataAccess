@@ -1,5 +1,4 @@
 ﻿using HEF.Expressions.Sql;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -9,7 +8,24 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             serviceCollection.AddExpressionToSql();
 
-            serviceCollection.Replace(ServiceDescriptor.Singleton<IMethodCallSqlResolver, MethodCallMySqlResolver>());
+            serviceCollection.AddMethodCallExpressionMySqlResolver();
+
+            return serviceCollection;
+        }
+
+        private static IServiceCollection AddMethodCallExpressionMySqlResolver(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, DateTimeAddMethodsMySqlResolveExecutor>();
+
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, DecimalRoundMethodsMySqlResolveExecutor>();
+
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, MathRoundMethodsMySqlResolveExecutor>();
+
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, StringStartsWithMySqlResolveExecutor>();
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, StringEndsWithMySqlResolveExecutor>();
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, StringContainsMySqlResolveExecutor>();
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, StringConcatMySqlResolveExecutor>();
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, StringSubstringMySqlResolveExecutor>();
 
             return serviceCollection;
         }
