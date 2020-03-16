@@ -11,6 +11,6 @@ test: off
 deploy:
 - provider: NuGet
   api_key:
-    secure: ${{ secrets.NuGet_ApiKey_Appveyor }}
+    secure: oPAtTNZVZUAmYoenPdNZFz7pBm0mEhWCknYREwmhDLWCYGOqEGGhVa5Ik1f6EwGG
   skip_symbols: true
   artifact: /.*\.nupkg/
