@@ -15,7 +15,7 @@ namespace HEF.Expressions.Sql.Test
 
             var sqlSentence = TestStatic.ExprSqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((companyName = @p0) and (city = @p1))", sqlSentence.SqlText, true);
+            Assert.Equal("((companyName = @p0) AND (city = @p1))", sqlSentence.SqlText, true);
             Assert.Equal(2, sqlSentence.Parameters.Length);
         }
 
@@ -25,7 +25,7 @@ namespace HEF.Expressions.Sql.Test
             Expression<Func<Customer, bool>> customerPredicate = x => string.Compare(x.CompanyName, "drore") == 0 && x.City.CompareTo("Hangzhou") == 0;
             var sqlSentence = TestStatic.ExprSqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((companyName = @p0) and (city = @p1))", sqlSentence.SqlText, true);
+            Assert.Equal("((companyName = @p0) AND (city = @p1))", sqlSentence.SqlText, true);
             Assert.Equal(2, sqlSentence.Parameters.Length);
             
             customerPredicate = x => string.Compare(x.CompanyName, "drore") + x.City.CompareTo("Hangzhou") == 0;
@@ -53,12 +53,12 @@ namespace HEF.Expressions.Sql.Test
             var sqlSentence = TestStatic.ExprSqlResolver.Resolve(customerPredicate);
 
             Assert.Equal("((((((" + "(DATEADD(yyyy, 1, createTime) > @p0)"
-                + " and " + "(DATEADD(mm, 2, createTime) < @p0))"
-                + " and " + "(DATEADD(dd, 3.0, createTime) >= @p0))"
-                + " and " + "(DATEADD(hh, 4.0, createTime) <= @p0))"
-                + " and " + "(DATEADD(mi, 5.0, createTime) = @p0))"
-                + " and " + "(DATEADD(ss, 10.0, createTime) <> @p0))"
-                + " and " + "(DATEADD(ms, 100.0, createTime) < @p0))", sqlSentence.SqlText, true);
+                + " AND " + "(DATEADD(mm, 2, createTime) < @p0))"
+                + " AND " + "(DATEADD(dd, 3.0, createTime) >= @p0))"
+                + " AND " + "(DATEADD(hh, 4.0, createTime) <= @p0))"
+                + " AND " + "(DATEADD(mi, 5.0, createTime) = @p0))"
+                + " AND " + "(DATEADD(ss, 10.0, createTime) <> @p0))"
+                + " AND " + "(DATEADD(ms, 100.0, createTime) < @p0))", sqlSentence.SqlText, true);
             Assert.Single(sqlSentence.Parameters);
         }
 
@@ -102,14 +102,14 @@ namespace HEF.Expressions.Sql.Test
                 x => x.CompanyName.StartsWith("drore") && x.CompanyName.EndsWith("Inc") && x.City.Contains("Hangzhou");
             var sqlSentence = TestStatic.ExprSqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("(((CompanyName LIKE @p0 + '%') and (CompanyName LIKE '%' + @p1)) and (City LIKE '%' + @p2 + '%'))",
+            Assert.Equal("(((CompanyName LIKE @p0 + '%') AND (CompanyName LIKE '%' + @p1)) AND (City LIKE '%' + @p2 + '%'))",
                 sqlSentence.SqlText, true);
             Assert.Equal(3, sqlSentence.Parameters.Length);
 
             customerPredicate = x => string.IsNullOrEmpty(x.ContactName) && string.Concat(x.City, x.CompanyName) == "Hangzhou drore";
             sqlSentence = TestStatic.ExprSqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((ContactName is null or ContactName = '') and (City + CompanyName = @p0))", sqlSentence.SqlText, true);
+            Assert.Equal("((ContactName IS NULL OR ContactName = '') AND (City + CompanyName = @p0))", sqlSentence.SqlText, true);
             Assert.Single(sqlSentence.Parameters);
 
             customerPredicate = x => x.CompanyName.Trim().Replace("drore", "dvance").Substring(3, 6).ToLower().ToUpper() == "DVANCE";
@@ -123,13 +123,13 @@ namespace HEF.Expressions.Sql.Test
         public void TestResolveIEnumerableContainMethod()
         {
             var idList = new long[] { 1, 3, 5, 6 };
-            var cityList = new[] { "Hangzhou", "Shanghai", "Wuhan" };
-            Expression<Func<Customer, bool>> customerPredicate = x => idList.Contains(x.id) && cityList.Contains(x.City);
+            var cityList = new[] { "Shanghai", "Wuhan" };
+            Expression<Func<Customer, bool>> customerPredicate = x => idList.Contains(x.id) && !cityList.Contains(x.City);
 
             var sqlSentence = TestStatic.ExprSqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((id In (1, 3, 5, 6)) and (City In (@p0, @p1, @p2)))", sqlSentence.SqlText, true);
-            Assert.Equal(3, sqlSentence.Parameters.Length);
+            Assert.Equal("((id IN (1, 3, 5, 6)) AND NOT (City IN (@p0, @p1)))", sqlSentence.SqlText, true);
+            Assert.Equal(2, sqlSentence.Parameters.Length);
         }
     }
 }

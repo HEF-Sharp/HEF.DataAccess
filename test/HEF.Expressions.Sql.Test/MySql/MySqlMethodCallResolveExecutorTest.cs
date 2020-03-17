@@ -15,7 +15,7 @@ namespace HEF.Expressions.Sql.Test
 
             var sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((`companyName` = @p0) and (`city` = @p1))", sqlSentence.SqlText, true);
+            Assert.Equal("((`companyName` = @p0) AND (`city` = @p1))", sqlSentence.SqlText, true);
             Assert.Equal(2, sqlSentence.Parameters.Length);
         }
 
@@ -25,7 +25,7 @@ namespace HEF.Expressions.Sql.Test
             Expression<Func<Customer, bool>> customerPredicate = x => string.Compare(x.CompanyName, "drore") == 0 && x.City.CompareTo("Hangzhou") == 0;
             var sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((`companyName` = @p0) and (`city` = @p1))", sqlSentence.SqlText, true);
+            Assert.Equal("((`companyName` = @p0) AND (`city` = @p1))", sqlSentence.SqlText, true);
             Assert.Equal(2, sqlSentence.Parameters.Length);
 
             customerPredicate = x => string.Compare(x.CompanyName, "drore") + x.City.CompareTo("Hangzhou") == 0;
@@ -53,12 +53,12 @@ namespace HEF.Expressions.Sql.Test
             var sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
             Assert.Equal("((((((" + "(DATE_ADD(`createTime`, INTERVAL 1 YEAR) > @p0)"
-                + " and " + "(DATE_ADD(`createTime`, INTERVAL 2 MONTH) < @p0))"
-                + " and " + "(DATE_ADD(`createTime`, INTERVAL 3.0 DAY) >= @p0))"
-                + " and " + "(DATE_ADD(`createTime`, INTERVAL 4.0 HOUR) <= @p0))"
-                + " and " + "(DATE_ADD(`createTime`, INTERVAL 5.0 MINUTE) = @p0))"
-                + " and " + "(DATE_ADD(`createTime`, INTERVAL 10.0 SECOND) <> @p0))"
-                + " and " + "(DATE_ADD(`createTime`, INTERVAL (100.0* 1000) MICROSECOND) < @p0))", sqlSentence.SqlText, true);
+                + " AND " + "(DATE_ADD(`createTime`, INTERVAL 2 MONTH) < @p0))"
+                + " AND " + "(DATE_ADD(`createTime`, INTERVAL 3.0 DAY) >= @p0))"
+                + " AND " + "(DATE_ADD(`createTime`, INTERVAL 4.0 HOUR) <= @p0))"
+                + " AND " + "(DATE_ADD(`createTime`, INTERVAL 5.0 MINUTE) = @p0))"
+                + " AND " + "(DATE_ADD(`createTime`, INTERVAL 10.0 SECOND) <> @p0))"
+                + " AND " + "(DATE_ADD(`createTime`, INTERVAL (100.0* 1000) MICROSECOND) < @p0))", sqlSentence.SqlText, true);
             Assert.Single(sqlSentence.Parameters);
         }
 
@@ -102,14 +102,14 @@ namespace HEF.Expressions.Sql.Test
                 x => x.CompanyName.StartsWith("drore") && x.CompanyName.EndsWith("Inc") && x.City.Contains("Hangzhou");
             var sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("(((`CompanyName` LIKE CONCAT(@p0, '%')) and (`CompanyName` LIKE CONCAT('%', @p1))) and (`City` LIKE CONCAT('%', @p2, '%')))",
+            Assert.Equal("(((`CompanyName` LIKE CONCAT(@p0, '%')) AND (`CompanyName` LIKE CONCAT('%', @p1))) AND (`City` LIKE CONCAT('%', @p2, '%')))",
                 sqlSentence.SqlText, true);
             Assert.Equal(3, sqlSentence.Parameters.Length);
 
             customerPredicate = x => string.IsNullOrEmpty(x.ContactName) && string.Concat(x.City, x.CompanyName) == "Hangzhou drore";
             sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((`ContactName` is null or `ContactName` = '') and (CONCAT(`City`, `CompanyName`) = @p0))", sqlSentence.SqlText, true);
+            Assert.Equal("((`ContactName` IS NULL OR `ContactName` = '') AND (CONCAT(`City`, `CompanyName`) = @p0))", sqlSentence.SqlText, true);
             Assert.Single(sqlSentence.Parameters);
 
             customerPredicate = x => x.CompanyName.Trim().Replace("drore", "dvance").Substring(3).ToLower().ToUpper() == "DVANCE";
@@ -123,13 +123,13 @@ namespace HEF.Expressions.Sql.Test
         public void TestResolveIEnumerableContainMethod()
         {
             var idList = new long[] { 1, 3, 5, 6 };
-            var cityList = new[] { "Hangzhou", "Shanghai", "Wuhan" };
-            Expression<Func<Customer, bool>> customerPredicate = x => idList.Contains(x.id) && cityList.Contains(x.City);
+            var cityList = new[] { "Shanghai", "Wuhan" };
+            Expression<Func<Customer, bool>> customerPredicate = x => idList.Contains(x.id) && !cityList.Contains(x.City);
 
             var sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((`id` In (1, 3, 5, 6)) and (`City` In (@p0, @p1, @p2)))", sqlSentence.SqlText, true);
-            Assert.Equal(3, sqlSentence.Parameters.Length);
+            Assert.Equal("((`id` IN (1, 3, 5, 6)) AND NOT (`City` IN (@p0, @p1)))", sqlSentence.SqlText, true);
+            Assert.Equal(2, sqlSentence.Parameters.Length);
         }
     }
 }

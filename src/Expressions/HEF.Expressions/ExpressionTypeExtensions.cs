@@ -39,7 +39,8 @@ namespace HEF.Expressions
             return expr.NodeType == ExpressionType.And ||
                 expr.NodeType == ExpressionType.AndAlso ||
                 expr.NodeType == ExpressionType.Or ||
-                expr.NodeType == ExpressionType.OrElse;
+                expr.NodeType == ExpressionType.OrElse ||
+                expr.NodeType == ExpressionType.Not;
         }
 
         public static bool IsCompareOperation(this Expression expr)
@@ -61,7 +62,10 @@ namespace HEF.Expressions
                 expr.NodeType == ExpressionType.Multiply ||
                 expr.NodeType == ExpressionType.MultiplyChecked ||
                 expr.NodeType == ExpressionType.Divide ||
-                expr.NodeType == ExpressionType.Modulo;
+                expr.NodeType == ExpressionType.Modulo ||
+                expr.NodeType == ExpressionType.Negate ||
+                expr.NodeType == ExpressionType.NegateChecked ||
+                expr.NodeType == ExpressionType.UnaryPlus;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace HEF.Expressions.Sql.Test
 
             var sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("(`companyName` is null)", sqlSentence.SqlText, true);
+            Assert.Equal("(`companyName` IS NULL)", sqlSentence.SqlText, true);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace HEF.Expressions.Sql.Test
 
             var sqlSentence = TestStatic.ExprMySqlResolver.Resolve(customerPredicate);
 
-            Assert.Equal("((`companyName` = @p0) and (`city` = @p1))", sqlSentence.SqlText, true);
+            Assert.Equal("((`companyName` = @p0) AND (`city` = @p1))", sqlSentence.SqlText, true);
             Assert.Equal(2, sqlSentence.Parameters.Length);
         }
     }

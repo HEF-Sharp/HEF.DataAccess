@@ -11,7 +11,7 @@ namespace HEF.Data.Query.Test
         {
             IQueryable<Customer> customers = new DbEntityQueryable<Customer>(QueryTestStatic.AsyncQueryProvider);
             var customerList = customers.Where(m => m.CompanyName.StartsWith("drore"))
-                .Where(m => new[] { "Hangzhou", "Shanghai", "Wuhan"}.Contains(m.City))
+                .Where(m => !new[] { "Shanghai", "Wuhan"}.Contains(m.City))
                 .OrderBy(m => m.createTime).ThenBy(m => m.id).Skip(1).Take(5).ToList();
 
             Assert.True(customerList.Count > 0);

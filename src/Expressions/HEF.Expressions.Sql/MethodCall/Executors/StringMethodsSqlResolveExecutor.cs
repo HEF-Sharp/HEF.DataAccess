@@ -119,7 +119,7 @@ namespace HEF.Expressions.Sql
             {
                 writeAction("(");
                 visitFunc(expression.Arguments[0]);
-                writeAction(" is null or ");
+                writeAction(" IS NULL OR ");
                 visitFunc(expression.Arguments[0]);
                 writeAction(" = '')");
             }

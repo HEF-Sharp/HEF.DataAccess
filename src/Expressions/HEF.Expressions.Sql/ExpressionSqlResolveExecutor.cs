@@ -117,6 +117,36 @@ namespace HEF.Expressions.Sql
                 || expression.IsMathOperation();
         }
 
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            string unaryOperator = GetUnaryOperator(node);
+
+            switch (node.NodeType)
+            {
+                case ExpressionType.Not:
+                    if (IsBoolean(node.Operand.Type) || unaryOperator.Length > 1)
+                    {
+                        Write(unaryOperator);
+                        Write(" ");
+                        Visit(node.Operand);
+                        break;
+                    }
+                    goto case ExpressionType.Negate;                
+                case ExpressionType.Negate:
+                case ExpressionType.NegateChecked:
+                    Write(unaryOperator);
+                    Visit(node.Operand);
+                    break;
+                case ExpressionType.UnaryPlus:
+                    Visit(node.Operand);
+                    break;
+                default:
+                    throw new NotSupportedException($"The unary operator '{node.NodeType}' is not supported");
+            }
+
+            return node;
+        }
+
         protected override Expression VisitBinary(BinaryExpression node)
         {
             var binaryOperator = GetBinaryOperator(node);
@@ -136,13 +166,13 @@ namespace HEF.Expressions.Sql
                     if (IsNullConstant(rightExpr))
                     {
                         Visit(leftExpr);
-                        Write(" is null");
+                        Write(" IS NULL");
                         break;
                     }
                     else if (IsNullConstant(leftExpr))
                     {
                         Visit(rightExpr);
-                        Write(" is null");
+                        Write(" IS NULL");
                         break;
                     }
                     goto case ExpressionType.LessThan;
@@ -150,13 +180,13 @@ namespace HEF.Expressions.Sql
                     if (IsNullConstant(rightExpr))
                     {
                         Visit(leftExpr);
-                        Write(" is not null");
+                        Write(" IS NOT NULL");
                         break;
                     }
                     else if (IsNullConstant(leftExpr))
                     {
                         Visit(rightExpr);
-                        Write(" is not null");
+                        Write(" IS NOT NULL");
                         break;
                     }
                     goto case ExpressionType.LessThan;
@@ -238,16 +268,32 @@ namespace HEF.Expressions.Sql
             return entityMapper.Properties.Single(m => string.Compare(m.PropertyInfo.Name, member.Name) == 0);
         }
 
+        protected virtual string GetUnaryOperator(UnaryExpression expression)
+        {
+            switch (expression.NodeType)
+            {
+                case ExpressionType.Negate:
+                case ExpressionType.NegateChecked:
+                    return "-";
+                case ExpressionType.UnaryPlus:
+                    return "+";
+                case ExpressionType.Not:
+                    return IsBoolean(expression.Operand.Type) ? "NOT" : "~";
+                default:
+                    return "";
+            }
+        }
+
         protected virtual string GetBinaryOperator(BinaryExpression expression)
         {
             switch (expression.NodeType)
             {
                 case ExpressionType.And:
                 case ExpressionType.AndAlso:
-                    return (IsBoolean(expression.Left.Type)) ? "and" : "&";
+                    return (IsBoolean(expression.Left.Type)) ? "AND" : "&";
                 case ExpressionType.Or:
                 case ExpressionType.OrElse:
-                    return (IsBoolean(expression.Left.Type) ? "or" : "|");
+                    return (IsBoolean(expression.Left.Type) ? "OR" : "|");
                 case ExpressionType.Equal:
                     return "=";
                 case ExpressionType.NotEqual:
@@ -343,7 +389,7 @@ namespace HEF.Expressions.Sql
         {
             if (value == null)
             {
-                Write("null");
+                Write("NULL");
                 return;
             }
 

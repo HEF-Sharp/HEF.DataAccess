@@ -24,7 +24,7 @@ namespace HEF.Expressions.Sql
             {
                 writeAction("(");
                 visitFunc(expression.Arguments[1]);
-                writeAction(" In ");
+                writeAction(" IN ");
                 visitFunc(expression.Arguments[0]);
                 writeAction(")");
             }
