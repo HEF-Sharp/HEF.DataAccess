@@ -41,7 +41,8 @@ namespace Microsoft.Extensions.DependencyInjection
             serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, StringSubstringSqlResolveExecutor>();
             serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, StringTrimSqlResolveExecutor>();
 
-            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, EnumerableContainsMethodsSqlResolveExecutor>();
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, EnumerableContainsSqlResolveExecutor>();
+            serviceCollection.AddSingleton<IMethodCallSqlResolveExecutor, CollectionContainsSqlResolveExecutor>();
             #endregion
 
             serviceCollection.TryAddSingleton<IMethodCallSqlResolver, MethodCallSqlResolver>();

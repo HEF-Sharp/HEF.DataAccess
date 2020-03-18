@@ -403,11 +403,7 @@ namespace HEF.Expressions.Sql
             if (!constantType.Is<string>() && constantType.Is(typeof(IEnumerable<>))
                 && value is IEnumerable valueList)
             {
-                var elementType = constantType.GetInterfaces()
-                    .Single(itype => itype.IsGenericType && itype.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                    .GetGenericArguments()[0];
-
-                WriteEnumerableConstant(elementType, valueList);
+                WriteEnumerableConstant(constantType, valueList);
                 return;
             }
             
@@ -439,10 +435,32 @@ namespace HEF.Expressions.Sql
             }
         }
 
-        protected virtual void WriteEnumerableConstant(Type elementType, IEnumerable valueList)
+        protected virtual Type ExtractEnumerableGenericArgumentType(Type type)
+        {
+            if (!type.Is(typeof(IEnumerable<>)))
+                return null;
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                return type.GetGenericArguments()[0];
+
+            foreach(var interfaceType in type.GetInterfaces())
+            {
+                var interfaceGenericArgumentType = ExtractEnumerableGenericArgumentType(interfaceType);
+                if (interfaceGenericArgumentType != null)
+                    return interfaceGenericArgumentType;
+            }
+
+            return ExtractEnumerableGenericArgumentType(type.BaseType);
+        }
+
+        protected virtual void WriteEnumerableConstant(Type constantType, IEnumerable valueList)
         {
             if (valueList == null)
                 throw new ArgumentNullException(nameof(valueList));
+
+            var elementType = ExtractEnumerableGenericArgumentType(constantType);
+            if (elementType == null)
+                throw new ArgumentException($"{constantType} is not implement {typeof(IEnumerable<>)}");
 
             Write("(");
             int index = 0;

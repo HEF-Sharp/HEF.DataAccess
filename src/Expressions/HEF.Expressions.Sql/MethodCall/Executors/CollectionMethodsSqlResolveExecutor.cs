@@ -1,21 +1,22 @@
-﻿using System;
-using System.Linq;
+﻿using HEF.Util;
+using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace HEF.Expressions.Sql
 {
-    public class EnumerableContainsSqlResolveExecutor : IMethodCallSqlResolveExecutor
+    public class CollectionContainsSqlResolveExecutor : IMethodCallSqlResolveExecutor
     {
-        public string ResolveMethod => "IEnumerable.Contains";
+        public string ResolveMethod => "ICollection.Contains";
 
         public bool IsResolveMethod(MethodCallExpression expression)
         {
-            return expression.Method.DeclaringType == typeof(Enumerable)
+            return expression.Method.DeclaringType.Is(typeof(ICollection<>))
                 && expression.Method.Name == "Contains"
-                && expression.Method.IsStatic
-                && expression.Method.IsGenericMethod
+                && !expression.Method.IsStatic
+                && !expression.Method.IsGenericMethod
                 && expression.Method.ReturnType == typeof(bool)
-                && expression.Arguments.Count == 2;
+                && expression.Arguments.Count == 1;
         }
 
         public void Execute(MethodCallExpression expression, Action<object> writeAction, Func<Expression, Expression> visitFunc)
@@ -23,9 +24,9 @@ namespace HEF.Expressions.Sql
             if (IsResolveMethod(expression))
             {
                 writeAction("(");
-                visitFunc(expression.Arguments[1]);
-                writeAction(" IN ");
                 visitFunc(expression.Arguments[0]);
+                writeAction(" IN ");
+                visitFunc(expression.Object);
                 writeAction(")");
             }
         }

@@ -1,5 +1,6 @@
 ﻿using DataAccess.TestCommon;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Xunit;
@@ -122,7 +123,7 @@ namespace HEF.Expressions.Sql.Test
         [Fact]
         public void TestResolveIEnumerableContainMethod()
         {
-            var idList = new long[] { 1, 3, 5, 6 };
+            var idList = new List<long> { 1, 3, 5, 6 };
             var cityList = new[] { "Shanghai", "Wuhan" };
             Expression<Func<Customer, bool>> customerPredicate = x => idList.Contains(x.id) && !cityList.Contains(x.City);
 
