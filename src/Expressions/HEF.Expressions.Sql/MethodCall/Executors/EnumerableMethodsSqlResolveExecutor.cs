@@ -18,7 +18,7 @@ namespace HEF.Expressions.Sql
                 && expression.Arguments.Count == 2;
         }
 
-        public void Execute(MethodCallExpression expression, Action<object> writeAction, Func<Expression, Expression> visitFunc)
+        public virtual void Execute(MethodCallExpression expression, Action<object> writeAction, Func<Expression, Expression> visitFunc)
         {
             if (IsResolveMethod(expression))
             {
