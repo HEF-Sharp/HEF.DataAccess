@@ -12,12 +12,12 @@ namespace HEF.Service.CRUD
         #region 查询
         HEFDoResult<TEntity> GetByKey(object id);
 
-        HEFDoResult<TEntity> GetSingle(Action<IQueryable<TEntity>> queryAction);
+        HEFDoResult<TEntity> GetSingle(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 
-        HEFDoResult<IList<TEntity>> GetList(Action<IQueryable<TEntity>> queryAction);
+        HEFDoResult<IList<TEntity>> GetList(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 
         HEFDoResult<HEFPageData<TEntity>> GetPageList(int currentPage, int pageSize,
-            Action<IQueryable<TEntity>> queryAction);
+            Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
         #endregion
 
         #region 插入

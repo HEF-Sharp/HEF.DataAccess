@@ -25,7 +25,7 @@ namespace HEF.Service.CRUD
                 : HEFDoResultHelper.DoSuccess(entity);
         }
 
-        public virtual async Task<HEFDoResult<TEntity>> GetSingleAsync(Action<IQueryable<TEntity>> queryAction)
+        public virtual async Task<HEFDoResult<TEntity>> GetSingleAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction)
         {
             var queryable = await Repository.QueryAsync();
             var result = queryable.Action(queryAction).Single();
@@ -34,7 +34,7 @@ namespace HEF.Service.CRUD
                : HEFDoResultHelper.DoSuccess(result);
         }
 
-        public virtual async Task<HEFDoResult<IList<TEntity>>> GetListAsync(Action<IQueryable<TEntity>> queryAction)
+        public virtual async Task<HEFDoResult<IList<TEntity>>> GetListAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction)
         {
             var queryable = await Repository.QueryAsync();
             var results = queryable.Action(queryAction).ToList();
@@ -44,7 +44,7 @@ namespace HEF.Service.CRUD
         }
 
         public virtual async Task<HEFDoResult<HEFPageData<TEntity>>> GetPageList(int currentPage, int pageSize,
-            Action<IQueryable<TEntity>> queryAction)
+            Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction)
         {
             var queryable = await Repository.QueryAsync();
             var pageResults = queryable.Action(queryAction).GetPageList(currentPage, pageSize);

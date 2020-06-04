@@ -24,7 +24,7 @@ namespace HEF.Service.CRUD
                 : HEFDoResultHelper.DoSuccess(entity);
         }
 
-        public virtual HEFDoResult<TEntity> GetSingle(Action<IQueryable<TEntity>> queryAction)
+        public virtual HEFDoResult<TEntity> GetSingle(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction)
         {
             var result = Repository.Query().Action(queryAction).Single();
 
@@ -32,7 +32,7 @@ namespace HEF.Service.CRUD
                : HEFDoResultHelper.DoSuccess(result);
         }
 
-        public virtual HEFDoResult<IList<TEntity>> GetList(Action<IQueryable<TEntity>> queryAction)
+        public virtual HEFDoResult<IList<TEntity>> GetList(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction)
         {
             var results = Repository.Query().Action(queryAction).ToList();
 
@@ -41,7 +41,7 @@ namespace HEF.Service.CRUD
         }
 
         public virtual HEFDoResult<HEFPageData<TEntity>> GetPageList(int currentPage, int pageSize,
-            Action<IQueryable<TEntity>> queryAction)
+            Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction)
         {
             var pageResults = Repository.Query().Action(queryAction)
                 .GetPageList(currentPage, pageSize);

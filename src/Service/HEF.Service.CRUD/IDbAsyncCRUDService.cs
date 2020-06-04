@@ -13,12 +13,12 @@ namespace HEF.Service.CRUD
         #region 查询
         Task<HEFDoResult<TEntity>> GetByKeyAsync(object id);
 
-        Task<HEFDoResult<TEntity>> GetSingleAsync(Action<IQueryable<TEntity>> queryAction);
+        Task<HEFDoResult<TEntity>> GetSingleAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 
-        Task<HEFDoResult<IList<TEntity>>> GetListAsync(Action<IQueryable<TEntity>> queryAction);
+        Task<HEFDoResult<IList<TEntity>>> GetListAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 
         Task<HEFDoResult<HEFPageData<TEntity>>> GetPageList(int currentPage, int pageSize,
-            Action<IQueryable<TEntity>> queryAction);
+            Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
         #endregion
 
         #region 插入
