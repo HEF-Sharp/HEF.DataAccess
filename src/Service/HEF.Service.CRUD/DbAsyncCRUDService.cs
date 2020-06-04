@@ -64,7 +64,7 @@ namespace HEF.Service.CRUD
 
             var result = await Repository.InsertAsync(entity, ignorePropertyExpressions);
 
-            return result > 0 ? HEFDoResultHelper.DoFail<int>("insert fail") : HEFDoResultHelper.DoSuccess(result);
+            return result > 0 ? HEFDoResultHelper.DoSuccess(result) : HEFDoResultHelper.DoFail<int>("insert fail");
         }
         #endregion
 
