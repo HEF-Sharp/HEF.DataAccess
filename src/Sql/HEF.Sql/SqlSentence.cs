@@ -23,10 +23,7 @@ namespace HEF.Sql
         public SqlParameter(string name, object value)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name));
-
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
+                throw new ArgumentNullException(nameof(name));            
 
             ParameterName = name;
             Value = value;
