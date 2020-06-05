@@ -13,7 +13,7 @@ namespace HEF.Service.CRUD
                 throw new ArgumentNullException(nameof(queryable));
 
             if (queryAction != null)
-                queryable = queryAction.Invoke(queryable);
+                return queryAction.Invoke(queryable);
 
             return queryable;
         }
