@@ -224,7 +224,7 @@ namespace HEF.Repository.Dapper
         {
             var sqlSentence = BuildSelectByKeySql(id);
 
-            return ConnectionContext.Connection.QuerySingle<TEntity>(
+            return ConnectionContext.Connection.QuerySingleOrDefault<TEntity>(
                 sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
                 ConnectionContext.Transaction);
         }
@@ -364,7 +364,7 @@ namespace HEF.Repository.Dapper
         {
             var sqlSentence = BuildSelectByKeySql(id);
 
-            return AsyncConnectionContext.Connection.QuerySingleAsync<TEntity>(
+            return AsyncConnectionContext.Connection.QuerySingleOrDefaultAsync<TEntity>(
                 sqlSentence.SqlText, ConvertToDynamicParameters(sqlSentence.Parameters),
                 AsyncConnectionContext.Transaction);
         }

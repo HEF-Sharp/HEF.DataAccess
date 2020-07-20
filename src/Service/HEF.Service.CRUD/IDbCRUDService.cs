@@ -12,7 +12,7 @@ namespace HEF.Service.CRUD
         #region 查询
         HEFDoResult<TEntity> GetByKey(object id);
 
-        HEFDoResult<TEntity> GetSingle(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
+        HEFDoResult<TEntity> GetSingleOrDefault(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 
         HEFDoResult<IList<TEntity>> GetList(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 

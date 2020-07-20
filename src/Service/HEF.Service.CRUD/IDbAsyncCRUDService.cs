@@ -13,7 +13,7 @@ namespace HEF.Service.CRUD
         #region 查询
         Task<HEFDoResult<TEntity>> GetByKeyAsync(object id);
 
-        Task<HEFDoResult<TEntity>> GetSingleAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
+        Task<HEFDoResult<TEntity>> GetSingleOrDefaultAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 
         Task<HEFDoResult<IList<TEntity>>> GetListAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 
