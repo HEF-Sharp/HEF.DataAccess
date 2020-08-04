@@ -336,7 +336,7 @@ namespace HEF.Data.Query
                 valueExpr = Expression.Condition(
                     Expression.Call(dataReaderParameter, DataReaderMethods.IsDbNullMethod, indexExpr),
                     Expression.Default(valueType),
-                    valueExpr);
+                    Expression.Convert(valueExpr, valueType));
             }
 
             return valueExpr;
