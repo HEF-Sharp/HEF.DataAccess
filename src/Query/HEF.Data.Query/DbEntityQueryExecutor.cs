@@ -61,13 +61,13 @@ namespace HEF.Data.Query
             var selectSqlBuilder = ConvertToSelectSqlBuilder(mapper, selectExpr);
             var sqlSentence = selectSqlBuilder.Build();
 
-            var elementFactoryExpr = BuildQueryReturnElementFactory(
+            var elementFactory = BuildQueryReturnElementFactory(
                 entityQueryExpr.ReturnType, selectProperties);
 
-            var queryExecutorExpr = BuildQueryResultFactory<TResult>(entityQueryExpr, sqlSentence,
-                elementFactoryExpr, selectProperties);
+            var queryExecutor = BuildQueryResultFactory<TResult>(entityQueryExpr, sqlSentence,
+                elementFactory, selectProperties);
 
-            return queryExecutorExpr.Compile().Invoke();
+            return queryExecutor.Invoke();
         }
 
         public TResult ExecuteAsync<TResult>(Expression query, CancellationToken cancellationToken)
@@ -80,13 +80,13 @@ namespace HEF.Data.Query
             var selectSqlBuilder = ConvertToSelectSqlBuilder(mapper, selectExpr);
             var sqlSentence = selectSqlBuilder.Build();
 
-            var elementFactoryExpr = BuildQueryReturnElementFactory(
+            var elementFactory = BuildQueryReturnElementFactory(
                 entityQueryExpr.ReturnType, selectProperties);
 
-            var queryExecutorExpr = BuildQueryResultAsyncFactory<TResult>(entityQueryExpr, sqlSentence,
-                elementFactoryExpr, cancellationToken, selectProperties);
+            var queryExecutor = BuildQueryResultAsyncFactory<TResult>(entityQueryExpr, sqlSentence,
+                elementFactory, cancellationToken, selectProperties);
 
-            return queryExecutorExpr.Compile().Invoke();
+            return queryExecutor.Invoke();
         }
 
         #region Helper Functions
@@ -237,16 +237,16 @@ namespace HEF.Data.Query
         private static readonly MethodInfo _dictGetValueMethod = typeof(IDictionary<string, int>).GetRuntimeMethod(
             nameof(IDictionary<string, int>.TryGetValue), new[] { typeof(string), typeof(int).MakeByRefType() });
 
-        protected static LambdaExpression BuildQueryReturnElementFactory(Type returnType,
+        protected static Delegate BuildQueryReturnElementFactory(Type returnType,
             params IPropertyMap[] selectProperties)
         {
             if (selectProperties.IsEmpty())
-                return LambdaExpressionCache.GetLambdaExpression($"{returnType}_dataReader_factory",
-                    (key) => BuildQueryReturnTypeFactory(returnType));
+                return ExpressionDelegateCache.GetExpressionDelegate($"{returnType}_dataReader_factory",
+                    key => BuildQueryReturnTypeFactory(returnType));
 
-            return LambdaExpressionCache.GetLambdaExpression(
+            return ExpressionDelegateCache.GetExpressionDelegate(
                 $"{returnType}_{string.Join(",", selectProperties.Select(m => m.Name))}_dataReader_factory",
-                (key) => BuildQueryReturnEntityFactory(returnType, selectProperties));
+                key => BuildQueryReturnEntityFactory(returnType, selectProperties));
         }
 
         protected static LambdaExpression BuildQueryReturnTypeFactory(Type returnType)
@@ -354,13 +354,13 @@ namespace HEF.Data.Query
                 .GetDeclaredMethods(nameof(AsyncEnumerableExtensions.SingleOrDefaultAsync))
                 .Single(mi => mi.GetParameters().Length == 2);
 
-        protected virtual Expression<Func<TResult>> BuildQueryResultFactory<TResult>(
+        protected virtual Func<TResult> BuildQueryResultFactory<TResult>(
             EntityQueryExpression entityQueryExpr, SqlSentence sqlSentence,
-            LambdaExpression elementFactoryExpr,
+            Delegate elementFactory,
             params IPropertyMap[] selectProperties)
         {
             var queryEnumerableExpr = BuildQueryEnumerableExpression(entityQueryExpr, sqlSentence,
-                elementFactoryExpr, selectProperties);
+                elementFactory, selectProperties);
 
             var queryResultExpr = queryEnumerableExpr;
             if (entityQueryExpr.ReturnSingle)
@@ -374,17 +374,17 @@ namespace HEF.Data.Query
                     queryEnumerableExpr);
             }
 
-            return Expression.Lambda<Func<TResult>>(queryResultExpr);
+            return Expression.Lambda<Func<TResult>>(queryResultExpr).Compile();
         }
 
-        protected virtual Expression<Func<TResult>> BuildQueryResultAsyncFactory<TResult>(
+        protected virtual Func<TResult> BuildQueryResultAsyncFactory<TResult>(
             EntityQueryExpression entityQueryExpr, SqlSentence sqlSentence,
-            LambdaExpression elementFactoryExpr,
+            Delegate elementFactory,
             CancellationToken cancellationToken,
             params IPropertyMap[] selectProperties)
         {
             var queryEnumerableExpr = BuildQueryEnumerableExpression(entityQueryExpr, sqlSentence,
-                elementFactoryExpr, selectProperties);
+                elementFactory, selectProperties);
 
             var queryResultExpr = queryEnumerableExpr;
             if (entityQueryExpr.ReturnSingle)
@@ -399,12 +399,12 @@ namespace HEF.Data.Query
                     Expression.Constant(cancellationToken));
             }
 
-            return Expression.Lambda<Func<TResult>>(queryResultExpr);
+            return Expression.Lambda<Func<TResult>>(queryResultExpr).Compile();
         }
 
         protected virtual Expression BuildQueryEnumerableExpression(
             EntityQueryExpression entityQueryExpr, SqlSentence sqlSentence,
-            LambdaExpression elementFactoryExpr,
+            Delegate elementFactory,
             params IPropertyMap[] selectProperties)
         {
             var queryingEnumerableExpr = Expression.New(
@@ -412,7 +412,7 @@ namespace HEF.Data.Query
                 Expression.Constant(CommandBuilderFactory.Create()),
                 Expression.Constant(sqlSentence),
                 Expression.Constant(selectProperties, typeof(IReadOnlyList<IPropertyMap>)),
-                Expression.Constant(elementFactoryExpr.Compile()),
+                Expression.Constant(elementFactory),
                 Expression.Constant(ConcurrencyDetector));
 
             return queryingEnumerableExpr;
