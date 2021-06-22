@@ -2,9 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace HEF.Repository.Dapper.Test
+namespace HEF.Service.Test
 {
-    public static class RepositoryTestStatic
+    public static class ServiceTestStatic
     {
         public static IServiceProvider MySqlServiceProvider = new ServiceCollection()
             .AddEntityMapperProvider(typeof(DbEntityMapper<>))
@@ -13,12 +13,19 @@ namespace HEF.Repository.Dapper.Test
             .AddSqlBuilder()
             .AddExpressionToMySql()
             .AddDapperRepository()
+            .AddDbService()
             .BuildServiceProvider();
 
-        public static IDapperRepository<TEntity> GetDapperRepository<TEntity>()
+        public static IDbService<TEntity> GetDbService<TEntity>()
             where TEntity : class
         {
-            return MySqlServiceProvider.GetRequiredService<IDapperRepository<TEntity>>();
+            return MySqlServiceProvider.GetRequiredService<IDbService<TEntity>>();
+        }
+
+        public static IDbAsyncService<TEntity> GetDbAsyncService<TEntity>()
+            where TEntity : class
+        {
+            return MySqlServiceProvider.GetRequiredService<IDbAsyncService<TEntity>>();
         }
     }
 }

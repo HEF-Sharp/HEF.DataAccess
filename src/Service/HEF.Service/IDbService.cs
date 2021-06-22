@@ -1,4 +1,5 @@
 ﻿using HEF.Repository;
+using System.Data;
 
 namespace HEF.Service
 {
@@ -6,6 +7,6 @@ namespace HEF.Service
     {
         IDbRepository<TEntity> Repository { get; }
         
-        IUnitOfWork OpenWorkUnit();
+        IUnitOfWork OpenWorkUnit(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
     }
 }

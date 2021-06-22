@@ -1,5 +1,8 @@
 ﻿using HEF.Repository;
 using System;
+using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HEF.Service
 {
@@ -13,9 +16,11 @@ namespace HEF.Service
 
         public IDbAsyncRepository<TEntity> Repository { get; }
 
-        public IAsyncUnitOfWork OpenWorkUnit()
+        public Task<IAsyncUnitOfWork> OpenWorkUnitAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+            CancellationToken cancellationToken = default)
         {
-            return new AsyncUnitOfWork(Repository.AsyncConnectionContext);
+            return new AsyncUnitOfWork(Repository.AsyncConnectionContext)
+                .UseTransactionAsync(isolationLevel, cancellationToken);
         }
     }
 }
