@@ -146,24 +146,29 @@ namespace HEF.Data.Query
                 var selectSqlStr = GetColumnSqlString(selectExpression);
                 sqlBuilder.Select(selectSqlStr);
             }
-            
-            var whereSentence = ExprSqlResolver.Resolve(selectExpression.Predicate);
-            sqlBuilder.From(SqlFormatter.TableName(mapper))
-                .Where(whereSentence.SqlText);
+
+            sqlBuilder.From(SqlFormatter.TableName(mapper));
+
+            if (selectExpression.Predicate != null)
+            {
+                var whereSentence = ExprSqlResolver.Resolve(selectExpression.Predicate);
+
+                sqlBuilder.Where(whereSentence.SqlText);
+
+                if (whereSentence.Parameters.IsNotEmpty())
+                {
+                    foreach (var whereParam in whereSentence.Parameters)
+                    {
+                        sqlBuilder.Parameter(whereParam.ParameterName, whereParam.Value);
+                    }
+                }
+            }
 
             if (selectExpression.Limit != null)
                 sqlBuilder.Limit(selectExpression.Limit.Value.ParseInt());
 
             if (selectExpression.Offset != null)
                 sqlBuilder.Offset(selectExpression.Offset.Value.ParseInt());
-
-            if (whereSentence.Parameters.IsNotEmpty())
-            {
-                foreach (var whereParam in whereSentence.Parameters)
-                {
-                    sqlBuilder.Parameter(whereParam.ParameterName, whereParam.Value);
-                }
-            }
 
             return sqlBuilder;
         }
