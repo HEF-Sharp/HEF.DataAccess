@@ -15,7 +15,7 @@ namespace HEF.Data
 
         public IDbConnection Connection { get; }
         
-        public IDbTransaction Transaction { get; private set; }
+        public IDbTransaction Transaction { get; internal set; }
 
         public void EnsureConnectionOpen()
         {

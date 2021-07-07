@@ -13,23 +13,24 @@ namespace HEF.Data
             if (connectionContext == null)
                 throw new ArgumentNullException(nameof(connectionContext));
 
-            if (connectionContext.Connection is DbConnection dbConnection)
-                Connection = dbConnection;
-            else
-                throw new ArgumentException("Async operations require use of a DbConnection");
-
-            if (connectionContext.Transaction != null)
+            if (connectionContext is DbConnectionContext dbConnectionContext)
             {
-                if (connectionContext.Transaction is DbTransaction dbTransaction)
-                    Transaction = dbTransaction;
-                else
-                    throw new ArgumentException("Async operations require use of a DbTransaction");
+                ConnectionContext = dbConnectionContext;
+                return;
             }
+            
+            throw new ArgumentException("Async operations require inject of a DbConnectionContext");
         }
 
-        public DbConnection Connection { get; }
+        protected DbConnectionContext ConnectionContext { get; }
 
-        public DbTransaction Transaction { get; private set; }
+        public DbConnection Connection => ConnectionContext.Connection.AsDbConnection();
+
+        public DbTransaction Transaction
+        {
+            get => ConnectionContext.Transaction.AsDbTransaction();
+            private set => ConnectionContext.Transaction = value;
+        }
 
         public Task EnsureConnectionOpenAsync(CancellationToken cancellationToken)
         {
