@@ -202,9 +202,13 @@ namespace HEF.Data.Query
                 mi => mi.Name == nameof(Queryable.Max) && mi.GetParameters().Length == 1);
 
             ElementAt = queryableMethods.Single(
-                mi => mi.Name == nameof(Queryable.ElementAt) && mi.GetParameters().Length == 2);
+                mi => mi.Name == nameof(Queryable.ElementAt)
+                    && mi.GetParameters().Length == 2
+                    && mi.GetParameters()[1].ParameterType == typeof(int));
             ElementAtOrDefault = queryableMethods.Single(
-                mi => mi.Name == nameof(Queryable.ElementAtOrDefault) && mi.GetParameters().Length == 2);
+                mi => mi.Name == nameof(Queryable.ElementAtOrDefault)
+                    && mi.GetParameters().Length == 2
+                    && mi.GetParameters()[1].ParameterType == typeof(int));
             FirstWithoutPredicate = queryableMethods.Single(
                 mi => mi.Name == nameof(Queryable.First) && mi.GetParameters().Length == 1);
             FirstWithPredicate = queryableMethods.Single(
@@ -257,7 +261,9 @@ namespace HEF.Data.Query
             Skip = queryableMethods.Single(
                 mi => mi.Name == nameof(Queryable.Skip) && mi.GetParameters().Length == 2);
             Take = queryableMethods.Single(
-                mi => mi.Name == nameof(Queryable.Take) && mi.GetParameters().Length == 2);
+                mi => mi.Name == nameof(Queryable.Take)
+                    && mi.GetParameters().Length == 2
+                    && mi.GetParameters()[1].ParameterType == typeof(int));
             SkipWhile = queryableMethods.Single(
                 mi => mi.Name == nameof(Queryable.SkipWhile)
                     && mi.GetParameters().Length == 2

@@ -195,9 +195,13 @@ namespace HEF.Data.Query
                     && mi.IsGenericMethodDefinition);
 
             ElementAt = enumerableMethods.Single(
-                mi => mi.Name == nameof(Enumerable.ElementAt) && mi.GetParameters().Length == 2);
+                mi => mi.Name == nameof(Enumerable.ElementAt)
+                    && mi.GetParameters().Length == 2
+                    && mi.GetParameters()[1].ParameterType == typeof(int));
             ElementAtOrDefault = enumerableMethods.Single(
-                mi => mi.Name == nameof(Enumerable.ElementAtOrDefault) && mi.GetParameters().Length == 2);
+                mi => mi.Name == nameof(Enumerable.ElementAtOrDefault)
+                    && mi.GetParameters().Length == 2
+                    && mi.GetParameters()[1].ParameterType == typeof(int));
             FirstWithoutPredicate = enumerableMethods.Single(
                 mi => mi.Name == nameof(Enumerable.First) && mi.GetParameters().Length == 1);
             FirstWithPredicate = enumerableMethods.Single(
@@ -254,7 +258,9 @@ namespace HEF.Data.Query
             Skip = enumerableMethods.Single(
                 mi => mi.Name == nameof(Enumerable.Skip) && mi.GetParameters().Length == 2);
             Take = enumerableMethods.Single(
-                mi => mi.Name == nameof(Enumerable.Take) && mi.GetParameters().Length == 2);
+                mi => mi.Name == nameof(Enumerable.Take)
+                    && mi.GetParameters().Length == 2
+                    && mi.GetParameters()[1].ParameterType == typeof(int));
             SkipWhile = enumerableMethods.Single(
                 mi => mi.Name == nameof(Enumerable.SkipWhile)
                     && mi.GetParameters().Length == 2
