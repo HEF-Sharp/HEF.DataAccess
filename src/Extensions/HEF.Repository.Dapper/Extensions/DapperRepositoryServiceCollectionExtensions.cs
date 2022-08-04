@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             serviceCollection.TryAddScoped(typeof(IDbRepository<>), typeof(DapperRepository<>));
             serviceCollection.TryAddScoped(typeof(IDbAsyncRepository<>), typeof(DapperRepository<>));
+
+            serviceCollection.TryAddScoped<IDapperRepository, DapperRepository>();
             serviceCollection.TryAddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
 
             return serviceCollection;
