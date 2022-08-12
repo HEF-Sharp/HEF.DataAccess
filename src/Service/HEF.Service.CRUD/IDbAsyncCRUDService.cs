@@ -17,7 +17,7 @@ namespace HEF.Service.CRUD
 
         Task<HEFDoResult<IList<TEntity>>> GetListAsync(Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
 
-        Task<HEFDoResult<HEFPageData<TEntity>>> GetPageList(int currentPage, int pageSize,
+        Task<HEFDoResult<HEFPageData<TEntity>>> GetPageListAsync(int currentPage, int pageSize,
             Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction);
         #endregion
 

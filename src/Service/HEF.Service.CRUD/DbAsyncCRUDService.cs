@@ -43,7 +43,7 @@ namespace HEF.Service.CRUD
                : HEFDoResultHelper.DoSuccess<IList<TEntity>>(results);
         }
 
-        public virtual async Task<HEFDoResult<HEFPageData<TEntity>>> GetPageList(int currentPage, int pageSize,
+        public virtual async Task<HEFDoResult<HEFPageData<TEntity>>> GetPageListAsync(int currentPage, int pageSize,
             Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction)
         {
             var queryable = await Repository.QueryAsync();
