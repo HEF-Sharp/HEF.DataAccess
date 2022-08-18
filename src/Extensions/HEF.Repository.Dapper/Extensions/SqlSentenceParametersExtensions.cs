@@ -5,9 +5,9 @@ using System;
 
 namespace HEF.Repository.Dapper
 {
-    internal static class SqlSentenceParametersExtensions
+    public static class SqlSentenceParametersExtensions
     {
-        internal static DynamicParameters FormatDynamicParameters(this SqlSentence sqlSentence)
+        public static DynamicParameters FormatDynamicParameters(this SqlSentence sqlSentence)
         {
             if (sqlSentence == null)
                 throw new ArgumentNullException(nameof(sqlSentence));

@@ -1,4 +1,5 @@
 ﻿using HEF.Data;
+using HEF.Sql.Entity;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,6 +12,8 @@ namespace HEF.Repository.Dapper
         IDbConnectionContext ConnectionContext { get; }
 
         IDbAsyncConnectionContext AsyncConnectionContext { get; }
+
+        IEntitySqlBuilderFactory EntitySqlBuilderFactory { get; }
 
         #region 查询
         /// <summary>

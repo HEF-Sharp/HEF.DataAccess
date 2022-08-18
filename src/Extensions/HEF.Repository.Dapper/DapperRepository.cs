@@ -35,7 +35,7 @@ namespace HEF.Repository.Dapper
 
         public IDbAsyncConnectionContext AsyncConnectionContext { get; }
 
-        protected IEntitySqlBuilderFactory EntitySqlBuilderFactory { get; }
+        public IEntitySqlBuilderFactory EntitySqlBuilderFactory { get; }
 
         protected IEntityPredicateFactory EntityPredicateFactory { get; }
 
