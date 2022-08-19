@@ -32,6 +32,8 @@ namespace HEF.Sql.Entity
 
         protected IExpressionSqlResolver ExprSqlResolver { get; }
 
+        protected Expression<Func<TEntity, bool>> PredicateExpr { get; private set; }
+
         public DeleteSqlBuilder<TEntity> Table()
         {
             SqlBuilder.Table(SqlFormatter.TableName(Mapper));
@@ -41,7 +43,28 @@ namespace HEF.Sql.Entity
 
         public DeleteSqlBuilder<TEntity> Where(Expression<Func<TEntity, bool>> predicateExpression)
         {
-            var sqlSentence = ExprSqlResolver.Resolve(predicateExpression);
+            if (predicateExpression == null)
+                throw new ArgumentNullException(nameof(predicateExpression));
+
+            if (predicateExpression.Body is ConstantExpression predicateConstant
+                && (bool)predicateConstant.Value)
+            {
+                return this;
+            }
+
+            PredicateExpr = PredicateExpr.CombinePredicate(predicateExpression);
+
+            return this;
+        }
+        
+        public SqlSentence Build() => ResolveWhereSqlAndParameters().SqlBuilder.Build();
+
+        private DeleteSqlBuilder<TEntity> ResolveWhereSqlAndParameters()
+        {
+            if (PredicateExpr == null)
+                return this;
+
+            var sqlSentence = ExprSqlResolver.Resolve(PredicateExpr);
 
             SqlBuilder.Where(sqlSentence.SqlText);
             if (sqlSentence.Parameters.IsNotEmpty())
@@ -54,7 +77,5 @@ namespace HEF.Sql.Entity
 
             return this;
         }
-
-        public SqlSentence Build() => SqlBuilder.Build();
     }
 }

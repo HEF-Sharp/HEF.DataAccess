@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HEF.Expressions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -118,27 +119,6 @@ namespace HEF.Data.Query
             var combineExpr = AndAlso(leftPredicate.Body, replaceRightExpr);
 
             return Lambda(leftPredicate.Type, combineExpr, leftPredicate.Parameters);
-        }
-    }
-
-    /// <summary>
-    /// 参数替换 ExpressionVisitor
-    /// </summary>
-    internal class ParameterReplaceVisitor : ExpressionVisitor
-    {
-        internal ParameterReplaceVisitor(ParameterExpression originalParam, ParameterExpression replacementParam)
-        {
-            OriginalParameter = originalParam ?? throw new ArgumentNullException(nameof(originalParam));
-            ReplacementParameter = replacementParam ?? throw new ArgumentNullException(nameof(replacementParam));
-        }
-
-        protected ParameterExpression OriginalParameter { get; }
-
-        protected ParameterExpression ReplacementParameter { get; }
-
-        protected override Expression VisitParameter(ParameterExpression node)
-        {
-            return node == OriginalParameter ? ReplacementParameter : base.VisitParameter(node);
         }
     }
 }

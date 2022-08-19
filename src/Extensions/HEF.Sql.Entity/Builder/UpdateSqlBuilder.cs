@@ -34,6 +34,8 @@ namespace HEF.Sql.Entity
 
         protected IExpressionSqlResolver ExprSqlResolver { get; }
 
+        protected Expression<Func<TEntity, bool>> PredicateExpr { get; private set; }
+
         public UpdateSqlBuilder<TEntity> Table()
         {
             SqlBuilder.Table(SqlFormatter.TableName(Mapper));
@@ -82,22 +84,22 @@ namespace HEF.Sql.Entity
 
         public UpdateSqlBuilder<TEntity> Where(Expression<Func<TEntity, bool>> predicateExpression)
         {
-            var sqlSentence = ExprSqlResolver.Resolve(predicateExpression);
+            if (predicateExpression == null)
+                throw new ArgumentNullException(nameof(predicateExpression));
 
-            SqlBuilder.Where(sqlSentence.SqlText);
-            if (sqlSentence.Parameters.IsNotEmpty())
+            if (predicateExpression.Body is ConstantExpression predicateConstant
+                && (bool)predicateConstant.Value)
             {
-                foreach (var sqlParam in sqlSentence.Parameters)
-                {
-                    SqlBuilder.Parameter(sqlParam.ParameterName, sqlParam.Value);
-                }
+                return this;
             }
+
+            PredicateExpr = PredicateExpr.CombinePredicate(predicateExpression);
 
             return this;
         }
 
-        public SqlSentence Build() => SqlBuilder.Build();
-
+        public SqlSentence Build() => ResolveWhereSqlAndParameters().SqlBuilder.Build();
+        
         /// <summary>
         /// 获取Update属性
         /// </summary>
@@ -118,6 +120,25 @@ namespace HEF.Sql.Entity
             var propertyValue = propertyMap.PropertyInfo.GetValue(entity);
 
             SqlBuilder.Column(SqlFormatter.ColumnName(propertyMap), SqlFormatter.Parameter(propertyMap.Name), propertyValue);
+        }
+
+        private UpdateSqlBuilder<TEntity> ResolveWhereSqlAndParameters()
+        {
+            if (PredicateExpr == null)
+                return this;
+
+            var sqlSentence = ExprSqlResolver.Resolve(PredicateExpr);
+
+            SqlBuilder.Where(sqlSentence.SqlText);
+            if (sqlSentence.Parameters.IsNotEmpty())
+            {
+                foreach (var sqlParam in sqlSentence.Parameters)
+                {
+                    SqlBuilder.Parameter(sqlParam.ParameterName, sqlParam.Value);
+                }
+            }
+
+            return this;
         }
     }
 }

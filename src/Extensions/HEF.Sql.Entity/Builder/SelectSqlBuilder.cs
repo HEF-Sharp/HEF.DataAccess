@@ -34,6 +34,8 @@ namespace HEF.Sql.Entity
 
         protected IExpressionSqlResolver ExprSqlResolver { get; }
 
+        protected Expression<Func<TEntity, bool>> PredicateExpr { get; private set; }
+
         public SelectSqlBuilder<TEntity> Column(params Expression<Func<TEntity, object>>[] propertyExpressions)
         {
             if (propertyExpressions.IsEmpty())
@@ -64,16 +66,16 @@ namespace HEF.Sql.Entity
 
         public SelectSqlBuilder<TEntity> Where(Expression<Func<TEntity, bool>> predicateExpression)
         {
-            var sqlSentence = ExprSqlResolver.Resolve(predicateExpression);
+            if (predicateExpression == null)
+                throw new ArgumentNullException(nameof(predicateExpression));
 
-            SqlBuilder.Where(sqlSentence.SqlText);
-            if (sqlSentence.Parameters.IsNotEmpty())
+            if (predicateExpression.Body is ConstantExpression predicateConstant
+                && (bool)predicateConstant.Value)
             {
-                foreach(var sqlParam in sqlSentence.Parameters)
-                {
-                    SqlBuilder.Parameter(sqlParam.ParameterName, sqlParam.Value);
-                }
+                return this;
             }
+
+            PredicateExpr = PredicateExpr.CombinePredicate(predicateExpression);            
 
             return this;
         }
@@ -126,7 +128,7 @@ namespace HEF.Sql.Entity
             return this;
         }
 
-        public SqlSentence Build() => SqlBuilder.Build();
+        public SqlSentence Build() => ResolveWhereSqlAndParameters().SqlBuilder.Build();
 
         /// <summary>
         /// 获取Select属性
@@ -140,6 +142,25 @@ namespace HEF.Sql.Entity
             Func<IPropertyMap, bool> selectPredicate = p => !p.Ignored && !p.IsReadOnly;  //排除只读忽略的属性
 
             return Mapper.GetProperties(selectPredicate, isExclude, propertyExpressions);
+        }
+
+        private SelectSqlBuilder<TEntity> ResolveWhereSqlAndParameters()
+        {
+            if (PredicateExpr == null)
+                return this;
+
+            var sqlSentence = ExprSqlResolver.Resolve(PredicateExpr);
+
+            SqlBuilder.Where(sqlSentence.SqlText);
+            if (sqlSentence.Parameters.IsNotEmpty())
+            {
+                foreach (var sqlParam in sqlSentence.Parameters)
+                {
+                    SqlBuilder.Parameter(sqlParam.ParameterName, sqlParam.Value);
+                }
+            }
+
+            return this;
         }
     }
 }
