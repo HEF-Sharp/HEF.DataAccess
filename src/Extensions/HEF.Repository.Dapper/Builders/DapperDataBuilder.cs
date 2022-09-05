@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HEF.Repository.Dapper
 {
-    internal abstract class DapperDataBuilder : IDapperExecute
+    public abstract class DapperDataBuilder : IDapperExecute
     {
         protected DapperDataBuilder(IDbConnectionContext connectionContext,
             IEntitySqlBuilderFactory entitySqlBuilderFactory)
