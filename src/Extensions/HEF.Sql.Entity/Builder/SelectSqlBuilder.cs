@@ -136,7 +136,7 @@ namespace HEF.Sql.Entity
         /// <param name="isExclude">是否排除</param>
         /// <param name="propertyExpressions"></param>
         /// <returns></returns>
-        private IEnumerable<IPropertyMap> GetSelectProperties(bool isExclude,
+        protected virtual IEnumerable<IPropertyMap> GetSelectProperties(bool isExclude,
             params Expression<Func<TEntity, object>>[] propertyExpressions)
         {
             Func<IPropertyMap, bool> selectPredicate = p => !p.Ignored && !p.IsReadOnly;  //排除只读忽略的属性

@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace HEF.Data.Query
 {
-    public class DbEntityQueryable<TResult> : IOrderedQueryable<TResult>, IAsyncEnumerable<TResult>
+    public class DbEntityQueryable<TElement> : IOrderedQueryable<TElement>, IAsyncEnumerable<TElement>
     {
         private readonly IAsyncQueryProvider _queryProvider;
 
@@ -23,19 +23,19 @@ namespace HEF.Data.Query
             Expression = expression;
         }
 
-        public virtual Type ElementType => typeof(TResult);
+        public virtual Type ElementType => typeof(TElement);
 
         public virtual Expression Expression { get; }
 
         public virtual IQueryProvider Provider => _queryProvider;
 
-        public virtual IEnumerator<TResult> GetEnumerator()
-            => _queryProvider.Execute<IEnumerable<TResult>>(Expression).GetEnumerator();
+        public virtual IEnumerator<TElement> GetEnumerator()
+            => _queryProvider.Execute<IEnumerable<TElement>>(Expression).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
             => _queryProvider.Execute<IEnumerable>(Expression).GetEnumerator();
 
-        public virtual IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-            => _queryProvider.ExecuteAsync<IAsyncEnumerable<TResult>>(Expression).GetAsyncEnumerator(cancellationToken);
+        public virtual IAsyncEnumerator<TElement> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            => _queryProvider.ExecuteAsync<IAsyncEnumerable<TElement>>(Expression).GetAsyncEnumerator(cancellationToken);
     }
 }

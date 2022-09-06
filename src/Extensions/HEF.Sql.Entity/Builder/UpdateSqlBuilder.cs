@@ -106,7 +106,7 @@ namespace HEF.Sql.Entity
         /// <param name="isExclude">是否排除</param>
         /// <param name="propertyExpressions"></param>
         /// <returns></returns>
-        private IEnumerable<IPropertyMap> GetUpdateProperties(bool isExclude,
+        protected virtual IEnumerable<IPropertyMap> GetUpdateProperties(bool isExclude,
             params Expression<Func<TEntity, object>>[] propertyExpressions)
         {
             Func<IPropertyMap, bool> updatePredicate =
