@@ -1,6 +1,5 @@
 ﻿using HEF.Core;
 using HEF.Repository;
-using HEF.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,8 +35,7 @@ namespace HEF.Service.CRUD
         {
             var results = Repository.Query().Action(queryAction).ToList();
 
-            return results.IsEmpty() ? HEFDoResultHelper.DoNotFound<IList<TEntity>>("not found any record")
-               : HEFDoResultHelper.DoSuccess<IList<TEntity>>(results);
+            return HEFDoResultHelper.DoSuccess<IList<TEntity>>(results);
         }
 
         public virtual HEFDoResult<HEFPageData<TEntity>> GetPageList(int currentPage, int pageSize,
@@ -46,9 +44,7 @@ namespace HEF.Service.CRUD
             var pageResults = Repository.Query().Action(queryAction)
                 .GetPageList(currentPage, pageSize);
 
-            return pageResults.Data.IsEmpty()
-                ? HEFDoResultHelper.DoNotFound<HEFPageData<TEntity>>("not found any record of target page")
-                : HEFDoResultHelper.DoSuccess(pageResults);
+            return HEFDoResultHelper.DoSuccess(pageResults);
         }
         #endregion
 

@@ -1,6 +1,5 @@
 ﻿using HEF.Core;
 using HEF.Repository;
-using HEF.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,8 +38,7 @@ namespace HEF.Service.CRUD
             var queryable = await Repository.QueryAsync();
             var results = queryable.Action(queryAction).ToList();
 
-            return results.IsEmpty() ? HEFDoResultHelper.DoNotFound<IList<TEntity>>("not found any record")
-               : HEFDoResultHelper.DoSuccess<IList<TEntity>>(results);
+            return HEFDoResultHelper.DoSuccess<IList<TEntity>>(results);
         }
 
         public virtual async Task<HEFDoResult<HEFPageData<TEntity>>> GetPageListAsync(int currentPage, int pageSize,
@@ -49,9 +47,7 @@ namespace HEF.Service.CRUD
             var queryable = await Repository.QueryAsync();
             var pageResults = queryable.Action(queryAction).GetPageList(currentPage, pageSize);
 
-            return pageResults.Data.IsEmpty()
-                ? HEFDoResultHelper.DoNotFound<HEFPageData<TEntity>>("not found any record of target page")
-                : HEFDoResultHelper.DoSuccess(pageResults);
+            return HEFDoResultHelper.DoSuccess(pageResults);
         }
         #endregion
 
