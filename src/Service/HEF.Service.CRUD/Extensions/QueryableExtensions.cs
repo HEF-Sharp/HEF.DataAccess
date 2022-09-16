@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace HEF.Service.CRUD
 {
-    internal static class QueryableExtensions
+    public static class QueryableExtensions
     {
-        internal static IQueryable<TEntity> Action<TEntity>(this IQueryable<TEntity> queryable,
+        public static IQueryable<TEntity> Action<TEntity>(this IQueryable<TEntity> queryable,
             Func<IQueryable<TEntity>, IQueryable<TEntity>> queryAction)
         {
             if (queryable == null)
@@ -18,7 +18,7 @@ namespace HEF.Service.CRUD
             return queryable;
         }
 
-        internal static HEFPageData<TEntity> GetPageList<TEntity>(this IQueryable<TEntity> queryable,
+        public static HEFPageData<TEntity> GetPageList<TEntity>(this IQueryable<TEntity> queryable,
             int currentPage, int pageSize)
             where TEntity : class
         {
