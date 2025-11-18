@@ -17,9 +17,17 @@ namespace DataAccess.TestCommon
             .AddMySqlFormatter()
             .AddExpressionToMySql()
             .BuildServiceProvider();
-        
+
+        public static IServiceProvider OracleServiceProvider = new ServiceCollection()
+            .AddEntityMapperProvider(typeof(DbEntityMapper<>))
+            .AddOracleFormatter()
+            .AddExpressionToOracle()
+            .BuildServiceProvider();
+
         public static IExpressionSqlResolver ExprSqlResolver = SqlServiceProvider.GetRequiredService<IExpressionSqlResolver>();
 
         public static IExpressionSqlResolver ExprMySqlResolver = MySqlServiceProvider.GetRequiredService<IExpressionSqlResolver>();
+
+        public static IExpressionSqlResolver ExprOracleResolver = OracleServiceProvider.GetRequiredService<IExpressionSqlResolver>();
     }
 }

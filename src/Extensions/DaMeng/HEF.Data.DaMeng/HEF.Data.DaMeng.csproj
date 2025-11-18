@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>netstandard2.1</TargetFramework>
+	<Version>1.2.5</Version>
+	<AssemblyVersion>1.2.5.0</AssemblyVersion>
+	<FileVersion>1.2.5.0</FileVersion>
+	<Authors>wanlitao</Authors>
+	<Description>HEF Data Component for DaMeng</Description>
+	<Company>GreatBillows</Company>
+	<Copyright>Copyright © GreatBillows 2025</Copyright>
+	<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+	<PackageProjectUrl>https://github.com/HEF-Sharp/HEF.DataAccess</PackageProjectUrl>
+	<PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
+	<RepositoryUrl>https://github.com/HEF-Sharp/HEF.DataAccess.git</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DM.DmProvider" Version="8.3.1.37876" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\HEF.Data\HEF.Data.csproj" />
+  </ItemGroup>
+
+</Project>

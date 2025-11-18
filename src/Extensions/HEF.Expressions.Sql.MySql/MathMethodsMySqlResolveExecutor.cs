@@ -31,7 +31,16 @@ namespace HEF.Expressions.Sql
                     case "Truncate":
                         writeAction("TRUNCATE(");
                         visitFunc(expression.Arguments[0]);
-                        writeAction(", 0)");
+                        writeAction(", ");
+                        if (expression.Arguments.Count == 2 && expression.Arguments[1].Type == typeof(int))
+                        {
+                            visitFunc(expression.Arguments[1]);
+                        }
+                        else
+                        {
+                            writeAction(0);
+                        }
+                        writeAction(")");
                         break;
                 }
             }

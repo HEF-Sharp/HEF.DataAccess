@@ -16,5 +16,18 @@ namespace HEF.Data.Query.Test
             .BuildServiceProvider();
 
         public static IAsyncQueryProvider AsyncQueryProvider = MySqlServiceProvider.GetRequiredService<IAsyncQueryProvider>();
+
+        #region DaMeng
+        public static IServiceProvider DaMengServiceProvider = new ServiceCollection()
+            .AddEntityMapperProvider(typeof(DbEntityMapper<>))
+            .AddDaMengConnection("server=121.229.172.76;port=35236;user=sysdba;pwd=1hblSQT!@#")
+            .AddOracleFormatter()
+            .AddSqlBuilder()
+            .AddExpressionToOracle()
+            .AddEntityQueryable()
+            .BuildServiceProvider();
+
+        public static IAsyncQueryProvider DaMengAsyncQueryProvider = DaMengServiceProvider.GetRequiredService<IAsyncQueryProvider>();
+        #endregion
     }
 }

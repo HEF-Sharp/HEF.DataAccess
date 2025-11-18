@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace HEF.Expressions.Sql
 {
-    public class DecimalRoundMethodsMySqlResolveExecutor : DecimalRoundMethodsSqlResolveExecutor
+    public class MathRoundMethodsOracleResolveExecutor : MathRoundMethodsSqlResolveExecutor
     {
         public override void Execute(MethodCallExpression expression, Action<object> writeAction, Func<Expression, Expression> visitFunc)
         {
@@ -12,15 +12,18 @@ namespace HEF.Expressions.Sql
                 switch (expression.Method.Name)
                 {
                     case "Ceiling":
+                        writeAction("CEIL(");
+                        visitFunc(expression.Arguments[0]);
+                        writeAction(")");
+                        break;
                     case "Floor":
-                        writeAction(expression.Method.Name.ToUpper());
-                        writeAction("(");
+                        writeAction("FLOOR(");
                         visitFunc(expression.Arguments[0]);
                         writeAction(")");
                         break;
                     case "Round":
                         writeAction("ROUND(");
-                        visitFunc(expression.Arguments[0]);                        
+                        visitFunc(expression.Arguments[0]);
                         if (expression.Arguments.Count == 2 && expression.Arguments[1].Type == typeof(int))
                         {
                             writeAction(", ");
@@ -29,16 +32,12 @@ namespace HEF.Expressions.Sql
                         writeAction(")");
                         break;
                     case "Truncate":
-                        writeAction("TRUNCATE(");
+                        writeAction("TRUNC(");
                         visitFunc(expression.Arguments[0]);
-                        writeAction(", ");
                         if (expression.Arguments.Count == 2 && expression.Arguments[1].Type == typeof(int))
                         {
+                            writeAction(", ");
                             visitFunc(expression.Arguments[1]);
-                        }
-                        else
-                        {
-                            writeAction(0);
                         }
                         writeAction(")");
                         break;
